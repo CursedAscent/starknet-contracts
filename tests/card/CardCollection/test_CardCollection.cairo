@@ -4,11 +4,15 @@ from src.card.CardCollection.interfaces.ICardCollection import ICardCollection
 
 @external
 func __setup__() {
+    alloc_locals;
+    local name = 'hello';
+    local symbol = 'HELL';
+
     %{
         call_data = []
         
-        call_data.append(0x24)
-        call_data.append(0x42)
+        call_data.append(ids.name)
+        call_data.append(ids.symbol)
         call_data.append(0x84)
         
         base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm"
@@ -42,7 +46,7 @@ func test_name{syscall_ptr: felt*, range_check_ptr}() {
 
     let (name) = ICardCollection.name(contract_address=contract_address);
 
-    assert name = 0x24;
+    assert name = 'hello';
 
     return ();
 }
@@ -56,7 +60,7 @@ func test_symbol{syscall_ptr: felt*, range_check_ptr}() {
 
     let (symbol) = ICardCollection.symbol(contract_address=contract_address);
 
-    assert symbol = 0x42;
+    assert symbol = 'HELL';
 
     return ();
 }
