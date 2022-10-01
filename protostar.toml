@@ -5,6 +5,9 @@ protostar_version = "0.4.2"
 libs_path = "lib"
 
 ["protostar.contracts"]
-main = [
-    "src/main.cairo",
+CardCollection = [
+    "src/card/CardCollection/CardCollection.cairo",
 ]
+
+["protostar.build"]
+cairo-path = ["./lib/cairopen_contracts/src"]
