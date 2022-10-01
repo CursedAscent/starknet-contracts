@@ -10,6 +10,16 @@ namespace ICardCollection {
     //
     // Getters:
     //
+    
+    // @notice Return the name of the token
+    // @return name: the name of the token
+    func name() -> (name: felt) {
+    }
+
+    // @notice Return the symbol of the token
+    // @return symbol: the symbol of the token
+    func symbol() -> (symbol: felt) {
+    }
 
     // @notice Return the number of tokens in the collection
     // @return total_supply: the number of tokens in the collection
@@ -34,19 +44,9 @@ namespace ICardCollection {
     func get_rarity(token_id: felt) -> (rarity: felt) {
     }
 
-    // @notice Return the name of the token
-    // @return name: the name of the token
-    func name() -> (name: felt) {
-    }
-
-    // @notice Return the symbol of the token
-    // @return symbol: the symbol of the token
-    func symbol() -> (symbol: felt) {
-    }
-
     // @notice Return the URI of the given token
     // @param token_id: the id of the token
-    // @return tokenURI: the URI of the token
-    func tokenURI(tokenId: felt) -> (tokenURI: felt) {
+    // @return token_uri_len, token_uri: the length of the token URI, the token URI
+    func tokenURI(tokenId: felt) -> (token_uri_len: felt, token_uri: felt*) {
     }
 }

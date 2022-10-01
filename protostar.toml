@@ -11,3 +11,6 @@ CardCollection = [
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]
+
+["protostar.test"]
+cairo-path = ["./lib/cairopen_contracts/src"]
