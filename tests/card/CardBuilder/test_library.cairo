@@ -13,11 +13,11 @@ func __setup__() {
 
     %{
         call_data = []
-        
+
         call_data.append(ids.name)
         call_data.append(ids.symbol)
         call_data.append(0x84)
-        
+
         base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm"
 
         call_data.append(len(base_uri))

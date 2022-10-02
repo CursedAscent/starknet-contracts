@@ -10,11 +10,11 @@ func __setup__() {
 
     %{
         call_data = []
-        
+
         call_data.append(ids.name)
         call_data.append(ids.symbol)
         call_data.append(0x84)
-        
+
         base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm"
 
         call_data.append(len(base_uri))
@@ -128,7 +128,9 @@ func test_tokenURI{syscall_ptr: felt*, range_check_ptr}() {
     local contract_address;
     %{ ids.contract_address = context.contract_address %}
 
-    let (token_uri_len, token_uri) = ICardCollection.tokenURI(contract_address=contract_address, tokenId=0);
+    let (token_uri_len, token_uri) = ICardCollection.tokenURI(
+        contract_address=contract_address, tokenId=0
+    );
 
     local test_success;
     %{
