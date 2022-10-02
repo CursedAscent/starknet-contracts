@@ -55,10 +55,9 @@ namespace ACatalog {
         alloc_locals;
         let (collections: felt*) = alloc();
         let (local collections_len) = catalog_len.read(game_mode);
+        _retrieve_collections_list(game_mode, collections_len, collections + collections_len);
 
-        return _retrieve_collections_list(
-            game_mode, collections_len, collections + collections_len
-        );
+        return (collections_list_len=collections_len, collections_list=collections);
     }
 
     //
@@ -146,11 +145,9 @@ namespace ACatalog {
 
     func _retrieve_collections_list{
         syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
-    }(game_mode: felt, collections_len: felt, collections: felt*) -> (
-        collections_list_len: felt, collections_list: felt*
-    ) {
+    }(game_mode: felt, collections_len: felt, collections: felt*) {
         if (collections_len == 0) {
-            return (collections_len, collections);
+            return ();
         }
 
         let (addr) = catalog.read(game_mode, collections_len - 1);
