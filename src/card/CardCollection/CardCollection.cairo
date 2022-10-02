@@ -1,19 +1,6 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_lt_felt
-from starkware.cairo.common.alloc import alloc
-
-from lib.cairopen_contracts.src.cairopen.string.libs.conversion import (
-    conversion_felt_to_string,
-    conversion_ss_to_string,
-    conversion_ss_arr_to_string,
-)
-from lib.cairopen_contracts.src.cairopen.string.libs.manipulation import (
-    manipulation_concat,
-    manipulation_append_char,
-)
-from lib.cairopen_contracts.src.cairopen.string.ASCII import StringCodec
 
 from src.tokens.ERC721.AERC721 import AERC721
 from src.card.constants import CardData
@@ -74,6 +61,20 @@ func _initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // Getters
 //
 
+// @notice Return the name of the token
+// @return name: the name of the token
+@view
+func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
+    return AERC721.name();
+}
+
+// @notice Return the symbol of the token
+// @return symbol: the symbol of the token
+@view
+func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (symbol: felt) {
+    return AERC721.symbol();
+}
+
 // @notice Return the number of tokens in the collection
 // @return total_supply: the number of tokens in the collection
 @view
@@ -81,6 +82,16 @@ func total_supply{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     total_supply: felt
 ) {
     return AERC721.total_supply();
+}
+
+// @notice Return the formatted URI of the given token
+// @param token_id: the id of the token
+// @return : a string containing the URI of the token and its length
+@view
+func tokenURI{
+    bitwise_ptr: BitwiseBuiltin*, syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(token_id: felt) -> (token_uri_len: felt, token_uri: felt*) {
+    return AERC721.tokenURI(token_id=token_id);
 }
 
 // @notice Get the action of the card
@@ -111,58 +122,4 @@ func get_rarity{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     token_id: felt
 ) -> (rarity: felt) {
     return rarity.read(token_id);
-}
-
-// @notice Return the name of the token
-// @return name: the name of the token
-@view
-func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
-    return AERC721.name();
-}
-
-// @notice Return the symbol of the token
-// @return symbol: the symbol of the token
-@view
-func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (symbol: felt) {
-    return AERC721.symbol();
-}
-
-// @notice Return the formatted URI of the given token
-// @param token_id: the id of the token
-// @return : a string containing the URI of the token and its length
-@view
-func tokenURI{
-    bitwise_ptr: BitwiseBuiltin*, syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(token_id: felt) -> (token_uri_len: felt, token_uri: felt*) {
-    alloc_locals;
-    local cs = StringCodec.CHAR_SIZE;
-    local clcm = StringCodec.LAST_CHAR_MASK;
-    local offset = StringCodec.NUMERICAL_OFFSET;
-
-    // ensure token with token_id exists
-    let (local total_supply) = AERC721.total_supply();
-    with_attr error_message("CardCollection: URI query for nonexistent token") {
-        assert_lt_felt(token_id, total_supply);
-    }
-
-    // get base URI
-    let (base_uri_len, base_uri) = AERC721.get_base_uri();
-    let (base_uri_string) = conversion_ss_arr_to_string{
-        codec_char_size=cs, codec_last_char_mask=clcm
-    }(base_uri_len, base_uri);
-
-    // append '/' to base URI
-    let (uri_string) = manipulation_append_char(base_uri_string, '/');
-    let (extension_string) = conversion_ss_to_string{codec_char_size=cs, codec_last_char_mask=clcm}(
-        '.json'
-    );
-
-    // append token ID to base URI
-    let (token_id_string) = conversion_felt_to_string{codec_numerical_offset=offset}(token_id);
-    let (token_uri) = manipulation_concat(uri_string, token_id_string);
-
-    // append file extension
-    let (uri) = manipulation_concat(token_uri, extension_string);
-
-    return (uri.len, uri.data);
 }

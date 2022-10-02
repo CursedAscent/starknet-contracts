@@ -26,6 +26,12 @@ namespace ICardCollection {
     func total_supply() -> (total_supply: felt) {
     }
 
+    // @notice Return the URI of the given token
+    // @param token_id: the id of the token
+    // @return token_uri_len, token_uri: the length of the token URI, the token URI
+    func tokenURI(tokenId: felt) -> (token_uri_len: felt, token_uri: felt*) {
+    }
+
     // @notice Get the action of the card
     // @param token_id: the id of the card in the collection
     // @return packed_action: a packed, on-chain description of the card action
@@ -42,11 +48,5 @@ namespace ICardCollection {
     // @param token_id: the id of the card in the collection
     // @return rarity: the rarity value (as a RarityTypeEnum)
     func get_rarity(token_id: felt) -> (rarity: felt) {
-    }
-
-    // @notice Return the URI of the given token
-    // @param token_id: the id of the token
-    // @return token_uri_len, token_uri: the length of the token URI, the token URI
-    func tokenURI(tokenId: felt) -> (token_uri_len: felt, token_uri: felt*) {
     }
 }

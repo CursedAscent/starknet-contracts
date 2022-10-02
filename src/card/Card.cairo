@@ -2,6 +2,7 @@
 
 from src.utils.constants import TokenRef
 
+// Card entity
 struct Card {
     card_ref: TokenRef,
     id: felt,
