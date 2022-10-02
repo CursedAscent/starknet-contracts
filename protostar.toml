@@ -8,6 +8,9 @@ libs_path = "lib"
 CardCollection = [
     "src/card/CardCollection/CardCollection.cairo",
 ]
+CardCatalog = [
+    "src/card/CardCatalog/CardCatalog.cairo",
+]
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]
