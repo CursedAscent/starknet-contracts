@@ -6,7 +6,7 @@
 %lang starknet
 
 @contract_interface
-namespace ICardCollection {
+namespace IEnemyCollection {
     //
     // Getters:
     //

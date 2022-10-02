@@ -14,6 +14,9 @@ CardCatalog = [
 EnemyCollection = [
     "src/enemy/EnemyCollection/EnemyCollection.cairo",
 ]
+EnemyCatalog = [
+    "src/enemy/EnemyCatalog/EnemyCatalog.cairo",
+]
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]
