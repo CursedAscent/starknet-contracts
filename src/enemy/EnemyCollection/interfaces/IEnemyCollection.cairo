@@ -32,10 +32,18 @@ namespace IEnemyCollection {
     func tokenURI(tokenId: felt) -> (token_uri_len: felt, token_uri: felt*) {
     }
 
+    // @notice Get the number of actions defined in the action list
+    // @param token_id: the id of the enemy in the collection
+    // @return action_list_len: the length of the action list
+    func get_action_list_len(token_id: felt) -> (action_list_len: felt) {
+    }
+
     // @notice Get the list of all actions an enemy has
     // @param token_id: the id of the enemy in the collection
-    // @return action_list_len, action_list: the length of the array, array containing all the actions
-    func get_action_list(token_id: felt) -> (action_list_len: felt, action_list: felt*) {
+    // @return action_list: Tuple of 8 actions that can be defined
+    func get_action_list(token_id: felt) -> (
+        action_list: (felt, felt, felt, felt, felt, felt, felt, felt)
+    ) {
     }
 
     // @notice Get a specific action of an enemy

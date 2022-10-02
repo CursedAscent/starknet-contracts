@@ -2,6 +2,7 @@
     "conventionalCommits.scopes": [
         "CardCollection",
         "CardBuilder",
-        "EnemyCollection"
+        "EnemyCollection",
+        "EnemyBuilder"
     ]
 }

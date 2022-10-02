@@ -1,4 +1,4 @@
-// Helper functions to create Cards
+// Helper functions to create Card instances
 
 %lang starknet
 
@@ -7,7 +7,7 @@ from src.utils.constants import TokenRef
 from src.card.CardCollection.interfaces.ICardCollection import ICardCollection
 
 namespace CardBuilderLib {
-    // @notice Builds a partial Card instance from its token data. Its id must be set dowstream
+    // @notice Builds a partial Card instance from its token data. Its id must be set downstream
     // @param card_ref: The card's token ids
     // @return card: The partial card entity
     func build_partial_card{syscall_ptr: felt*, range_check_ptr}(card_ref: TokenRef) -> (

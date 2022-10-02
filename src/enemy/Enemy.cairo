@@ -13,6 +13,5 @@ struct Enemy {
     protection_points_coef: felt,
     damage_coef: felt,
     health_points: felt,
-    active_effects_len: felt,
-    active_effects: felt*,
+    active_effects: felt,
 }
