@@ -17,6 +17,9 @@ EnemyCollection = [
 EnemyCatalog = [
     "src/enemy/EnemyCatalog/EnemyCatalog.cairo",
 ]
+SceneCollection = [
+    "src/scene/SceneCollection/SceneCollection.cairo",
+]
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]

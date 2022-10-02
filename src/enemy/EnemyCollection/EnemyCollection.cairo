@@ -132,7 +132,9 @@ func tokenURI{
 // @param token_id: the id of the enemy in the collection
 // @return action_list_len: the length of the action list
 @view
-func get_action_list_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (action_list_len: felt) {
+func get_action_list_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (action_list_len: felt) {
     return action_list_len.read(token_id);
 }
 
