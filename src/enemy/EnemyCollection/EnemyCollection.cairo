@@ -30,7 +30,6 @@ func protection_points_coef(token_id: felt) -> (protection_points_coef: felt) {
 func damage_coef(token_id: felt) -> (damage_coef: felt) {
 }
 
-
 @storage_var
 func health_points(token_id: felt) -> (health_points: felt) {
 }
@@ -48,7 +47,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     base_uri: felt*,
     data_len: felt,
     data: EnemyData*,
-
 ) {
     AERC721.initializer(name, symbol, total_supply, base_uri_len, base_uri);
     _initializer(data_len - 1, data + (data_len - 1) * EnemyData.SIZE);
@@ -134,10 +132,9 @@ func tokenURI{
 // @param token_id: the id of the enemy in the collection
 // @return action_list_len, action_list: the length of the array, array containing all the actions
 @view
-func get_action_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (
-    action_list: (felt, felt, felt, felt, felt, felt, felt, felt)
-) {
-
+func get_action_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (action_list: (felt, felt, felt, felt, felt, felt, felt, felt)) {
     return _fill_action_list(token_id);
 }
 
@@ -146,7 +143,9 @@ func get_action_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 // @param action_id: the id of the action to retrieve
 // @return action: the retrieved action packed in a felt
 @view
-func get_action{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt, action_id: felt) -> (packed_action: felt) {
+func get_action{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt, action_id: felt
+) -> (packed_action: felt) {
     return action.read(token_id, action_id);
 }
 
@@ -154,7 +153,9 @@ func get_action{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 // @param token_id: the id of the enemy in the collection
 // @return armor_coef: the armor base coefficient
 @view
-func get_armor_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (armor_coef: felt) {
+func get_armor_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (armor_coef: felt) {
     return armor_coef.read(token_id);
 }
 
@@ -162,7 +163,9 @@ func get_armor_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 // @param token_id: the id of the enemy in the collection
 // @return protection_points_coef: the protection points base coefficient
 @view
-func get_protection_points_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (protection_points_coef: felt) {
+func get_protection_points_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (protection_points_coef: felt) {
     return protection_points_coef.read(token_id);
 }
 
@@ -170,7 +173,9 @@ func get_protection_points_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
 // @param token_id: the id of the enemy in the collection
 // @return damage_coef: the damage base coefficient
 @view
-func get_damage_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (damage_coef: felt) {
+func get_damage_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (damage_coef: felt) {
     return damage_coef.read(token_id);
 }
 
@@ -178,7 +183,9 @@ func get_damage_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 // @param token_id: the id of the enemy in the collection
 // @return health_points: the enemy's base health points
 @view
-func get_health_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(token_id: felt) -> (health_points: felt) {
+func get_health_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (health_points: felt) {
     return health_points.read(token_id);
 }
 

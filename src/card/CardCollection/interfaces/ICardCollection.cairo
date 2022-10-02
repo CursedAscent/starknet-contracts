@@ -10,7 +10,7 @@ namespace ICardCollection {
     //
     // Getters:
     //
-    
+
     // @notice Return the name of the token
     // @return name: the name of the token
     func name() -> (name: felt) {

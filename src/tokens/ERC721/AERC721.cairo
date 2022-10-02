@@ -92,7 +92,10 @@ namespace AERC721 {
     }
 
     func tokenURI{
-        bitwise_ptr: BitwiseBuiltin*, syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+        bitwise_ptr: BitwiseBuiltin*,
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
     }(token_id: felt) -> (token_uri_len: felt, token_uri: felt*) {
         alloc_locals;
         local cs = StringCodec.CHAR_SIZE;
@@ -113,9 +116,9 @@ namespace AERC721 {
 
         // append '/' to base URI
         let (uri_string) = manipulation_append_char(base_uri_string, '/');
-        let (extension_string) = conversion_ss_to_string{codec_char_size=cs, codec_last_char_mask=clcm}(
-            '.json'
-        );
+        let (extension_string) = conversion_ss_to_string{
+            codec_char_size=cs, codec_last_char_mask=clcm
+        }('.json');
 
         // append token ID to base URI
         let (token_id_string) = conversion_felt_to_string{codec_numerical_offset=offset}(token_id);
