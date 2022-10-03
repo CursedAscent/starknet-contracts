@@ -36,7 +36,7 @@ func get_collections{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuil
 func add_collection{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     game_mode: felt, collection_addr: felt
 ) {
-    // check if the collection is a SceneCOllection
+    // check if the collection is a SceneCollection
     // TODO: find a better check to see if get_logic_contract_addr() did not fail
     let (logic_contract_addr) = ISceneCollection.get_logic_contract_addr(collection_addr, 0);
     assert_not_zero(logic_contract_addr);
