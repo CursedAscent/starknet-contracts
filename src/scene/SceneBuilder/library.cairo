@@ -5,6 +5,7 @@
 from src.scene.Scene import Scene
 from src.utils.constants import TokenRef
 from src.scene.SceneCollection.interfaces.ISceneCollection import ISceneCollection
+from src.scene.constants import SceneTypeEnum
 
 namespace SceneBuilderLib {
     // @notice Builds a partial Scene instance from its token data.
@@ -21,6 +22,7 @@ namespace SceneBuilderLib {
 
         local scene: Scene = Scene(
             scene_ref=scene_ref,
+            scene_type=SceneTypeEnum.FIGHT,
             logic_contract_addr=logic_contract_addr
             );
 

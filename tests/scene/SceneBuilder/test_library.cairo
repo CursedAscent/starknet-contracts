@@ -3,6 +3,7 @@
 from src.scene.SceneCollection.interfaces.ISceneCollection import ISceneCollection
 from src.utils.constants import TokenRef
 from src.scene.Scene import Scene
+from src.scene.constants import SceneTypeEnum
 from src.scene.SceneBuilder.library import SceneBuilderLib
 
 @external
@@ -48,6 +49,7 @@ func test_build_partial_scene{syscall_ptr: felt*, range_check_ptr}() {
     let scene_ref = TokenRef(collection_addr=contract_address, token_id=0);
     let (local scene) = SceneBuilderLib.build_partial_scene(scene_ref);
 
+    assert scene.scene_type = SceneTypeEnum.FIGHT;
     assert scene.logic_contract_addr = 0x42;
 
     return ();
