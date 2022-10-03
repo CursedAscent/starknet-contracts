@@ -3,7 +3,9 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
+from src.scene.SceneLogic.interfaces.ISceneLogic import ISceneLogic
 from src.tokens.ERC721.AERC721 import AERC721
+from src.utils.constants import TokenRef
 from src.scene.constants import SceneData
 
 //
@@ -99,22 +101,24 @@ func get_logic_contract_addr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 // @param token_id: the id of the scene in the collection
 // @return event_id_list_len, event_id_list: the length of the event id list, the list of event ids
 @view
-func get_event_id_list(token_id: felt) -> (event_id_list_len: felt, event_id_list: felt*) {
-    alloc_locals;
+func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (event_id_list_len: felt, event_id_list: felt*) {
+    let (scene_logic) = logic_addr.read(token_id);
 
-    local void_addr: felt*;
-
-    return (0, void_addr);
+    let (data_len, data) = ISceneLogic.get_event_id_list(scene_logic);
+    return (data_len, data);
 }
 
 // @notice Get the list of enemy ids declared by the logic contract
 // @param token_id: the id of the scene in the collection
 // @return enemy_id_list_len, enemy_id_list: the length of the enemy id list, the list of enemy ids
 @view
-func get_enemy_id_list(token_id: felt) -> (enemy_id_list_len: felt, enemy_id_list: felt*) {
-    alloc_locals;
+func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (enemy_id_list_len: felt, enemy_id_list: TokenRef*) {
+    let (scene_logic) = logic_addr.read(token_id);
 
-    local void_addr: felt*;
-
-    return (0, void_addr);
+    let (data_len, data) = ISceneLogic.get_enemy_id_list(scene_logic);
+    return (data_len, data);
 }
