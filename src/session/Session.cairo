@@ -1,24 +1,28 @@
 %lang starknet
 
 from src.player.Player import Player
-from src.session.constants import SessionStateEnum
+from src.card.Card import Card
+from src.scene.SceneState import SceneState
+from src.scene.Scene import Scene
 
 // Session entity used to keep context of a player's game session
 struct Session {
     account_addr: felt,
     player: Player,
     cards_available_len: felt,
-    cards_available: Card*,  // Immutable, all card available for gamemode
-    player_deck_len: felt,
-    player_deck: Card*,
-    prizes_len: felt,
-    prizes: Card*,
+    // cards_available: Card*,  // Immutable, all card available for gamemode
+    // player_deck_len: felt, // Provided as part of Session tuple (Session, felt, Card*)
+    // player_deck: Card*, // Provided as part of Session tuple (Session, felt, Card*)
+    // prizes_len: felt,
+    // prizes: Card*, // Generated on the fly based on seed
+    // hand_len: felt,
+    // hand: Card*, // Generated on the fly based on seed
     scene_session: SceneState,
-    scenes_len: felt,
-    scenes: Scene*,
+    // scenes_len: felt,
+    // scenes: Scene*, // Immutable, scenes[room_1] == Scene.logic_contract_addr
     current_scene_id: felt,
-    rooms: felt,  // Immutable, all rooms computed at gamemode init
-    rooms_paths: felt,  // Immutable, all rooms edges computed at gamemode init
-    current_state: SessionStateEnum,
+    rooms: felt,  // Initializable, all rooms computed at gamemode init
+    rooms_paths: felt,  // Initializable, all rooms edges computed at gamemode init
+    current_state: felt, // SessionStateEnum
     seed: felt,  // PRNG seed
 }

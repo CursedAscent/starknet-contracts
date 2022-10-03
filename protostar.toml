@@ -23,6 +23,10 @@ SceneCollection = [
 SceneCatalog = [
     "src/scene/SceneCollection/SceneCollection.cairo",
 ]
+# Scene Logic contracts
+CockyImp = [
+    "src/cursed_ascent/scene/cocky_imp.cairo",
+]
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]

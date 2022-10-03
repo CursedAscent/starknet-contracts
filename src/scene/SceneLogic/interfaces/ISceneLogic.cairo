@@ -8,6 +8,8 @@ from src.session.Session import Session
 from src.player.Player import Player
 from src.card.Card import Card
 
+from src.utils.constants import TokenRef
+
 @contract_interface
 namespace ISceneLogic {
     //
@@ -15,13 +17,14 @@ namespace ISceneLogic {
     //
 
     // @notice Initialize the scene and return a SceneState struct containing its context
-    // @param session_state: the game session
     // @return scene_state: the scene's context
-    func initialize(session_state: Session) -> (scene_state: SceneState) {
+    func initialize_scene() -> (scene_state: SceneState) {
     }
 
     // @notice Computes the next action from a player
     // @param scene_state: the scene's context
+    // @param seed: seed to initialize PRNG
+    // @param player_len: UNUSED (pointer to single value)
     // @param player: a pointer to the player's instance
     // @param card_picked: the card picked by the player
     // @param target_ids_len: the length of target_ids array
@@ -29,6 +32,8 @@ namespace ISceneLogic {
     // @return scene_state: the scene's context
     func next_step(
         scene_state: SceneState,
+        seed: felt,
+        player_len: felt,
         player: Player*,
         card_picked: Card,
         target_ids_len: felt,
@@ -47,6 +52,6 @@ namespace ISceneLogic {
 
     // @notice Get the list of enemy ids declared in the contract
     // @return enemy_id_list_len, enemy_id_list: the length of the enemy id list, the list of enemy ids
-    func get_enemy_id_list() -> (enemy_id_list_len: felt, enemy_id_list: felt*) {
+    func get_enemy_id_list() -> (enemy_id_list_len: felt, enemy_id_list: TokenRef*) {
     }
 }
