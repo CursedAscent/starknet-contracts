@@ -5,6 +5,8 @@
 
 %lang starknet
 
+from src.utils.constants import TokenRef
+
 @contract_interface
 namespace ISceneCollection {
     //
@@ -47,6 +49,6 @@ namespace ISceneCollection {
     // @notice Get the list of enemy ids declared by the logic contract
     // @param token_id: the id of the scene in the collection
     // @return enemy_id_list_len, enemy_id_list: the length of the enemy id list, the list of enemy ids
-    func get_enemy_id_list(token_id: felt) -> (enemy_id_list_len: felt, enemy_id_list: felt*) {
+    func get_enemy_id_list(token_id: felt) -> (enemy_id_list_len: felt, enemy_id_list: TokenRef*) {
     }
 }

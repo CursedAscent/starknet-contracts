@@ -21,7 +21,7 @@ SceneCollection = [
     "src/scene/SceneCollection/SceneCollection.cairo",
 ]
 SceneCatalog = [
-    "src/scene/SceneCollection/SceneCollection.cairo",
+    "src/scene/SceneCatalog/SceneCatalog.cairo",
 ]
 # Scene Logic contracts
 CockyImp = [

@@ -23,6 +23,6 @@ struct Session {
     current_scene_id: felt,
     rooms: felt,  // Initializable, all rooms computed at gamemode init
     rooms_paths: felt,  // Initializable, all rooms edges computed at gamemode init
-    current_state: felt, // SessionStateEnum
+    current_state: felt,  // SessionStateEnum
     seed: felt,  // PRNG seed
 }

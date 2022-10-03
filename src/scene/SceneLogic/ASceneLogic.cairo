@@ -5,10 +5,8 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
-from src.scene.SceneLogic.interfaces.ISceneLogic import ISceneLogic
 from src.utils.constants import TokenRef
 from src.enemy.Enemy import Enemy
-
 
 //
 // Storage
@@ -35,12 +33,14 @@ namespace ASceneLogic {
     // Constructor
     //
     func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _enemy_list_len: felt, _enemy_list: TokenRef*, _event_list_len: felt, _event_list: felt*
+        _enemy_list_len: felt, _enemy_list: TokenRef*, _event_list_len: felt, _event_list: felt*
     ) {
         event_list_len.write(_event_list_len);
         _initialize_event_id_list(_event_list_len - 1, _event_list + (_event_list_len - 1));
         enemy_list_len.write(_enemy_list_len);
-        _initialize_enemy_id_list(_enemy_list_len - 1, _enemy_list + (_enemy_list_len - 1) * TokenRef.SIZE);
+        _initialize_enemy_id_list(
+            _enemy_list_len - 1, _enemy_list + (_enemy_list_len - 1) * TokenRef.SIZE
+        );
 
         return ();
     }
@@ -58,7 +58,7 @@ namespace ASceneLogic {
     }
 
     func _initialize_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-     data_len: felt, data: TokenRef*
+        data_len: felt, data: TokenRef*
     ) {
         if (data_len == -1) {
             return ();
@@ -73,7 +73,9 @@ namespace ASceneLogic {
     // Getters
     //
 
-    func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (event_id_list_len: felt, event_id_list: felt*) {
+    func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        event_id_list_len: felt, event_id_list: felt*
+    ) {
         alloc_locals;
 
         let (local event_id_list_len) = event_list_len.read();
@@ -84,7 +86,9 @@ namespace ASceneLogic {
         return (event_id_list_len, event_id_list);
     }
 
-    func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (enemy_id_list_len: felt, enemy_id_list: TokenRef*) {
+    func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        enemy_id_list_len: felt, enemy_id_list: TokenRef*
+    ) {
         alloc_locals;
 
         let (local enemy_id_list_len) = event_list_len.read();
