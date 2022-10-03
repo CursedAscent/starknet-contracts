@@ -20,6 +20,9 @@ EnemyCatalog = [
 SceneCollection = [
     "src/scene/SceneCollection/SceneCollection.cairo",
 ]
+SceneCatalog = [
+    "src/scene/SceneCollection/SceneCollection.cairo",
+]
 
 ["protostar.build"]
 cairo-path = ["./lib/cairopen_contracts/src"]
