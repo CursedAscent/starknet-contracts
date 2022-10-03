@@ -26,7 +26,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // func build_enemies{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 //     session_state: Session
 // ) -> {
-    
+
 // }
 
 // func initialize_scene{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -34,11 +34,11 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // ) -> (scene_state: SceneState) {
 //     alloc_locals;
 
-//     let (local enemy_id_list_len, local enemy_id_list) = get_enemy_id_list();
+// let (local enemy_id_list_len, local enemy_id_list) = get_enemy_id_list();
 
-//     build_enemies()
+// build_enemies()
 
-//     return (scene_state=SceneState(
+// return (scene_state=SceneState(
 //         enemies_len
 //     ));
 // }
@@ -47,10 +47,14 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // Getters
 //
 
-func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (event_id_list_len: felt, event_id_list: felt*) {
+func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    event_id_list_len: felt, event_id_list: felt*
+) {
     return ASceneLogic.get_event_id_list();
 }
 
-func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (enemy_id_list_len: felt, enemy_id_list: TokenRef*) {
+func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    enemy_id_list_len: felt, enemy_id_list: TokenRef*
+) {
     return ASceneLogic.get_enemy_id_list();
 }
