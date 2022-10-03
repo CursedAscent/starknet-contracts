@@ -30,7 +30,8 @@ namespace CardBuilderLib {
             id=-1,
             action=packed_action,
             class=class,
-            rarity=rarity
+            rarity=rarity,
+            drawable=1
             );
 
         return (card=card);

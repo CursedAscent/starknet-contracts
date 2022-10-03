@@ -9,4 +9,5 @@ struct Card {
     action: felt,
     class: felt,
     rarity: felt,
+    drawable: felt
 }
