@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Thx loaf <3
+// Upgraded function unpack_data from loaf (Thx <3)
 // https://github.com/BibliothecaForAdventurers/realms-contracts/blob/main/contracts/settling_game/utils/general.cairo
 
 %lang starknet
@@ -7,7 +7,8 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.bitwise import bitwise_and
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math_cmp import is_le_felt
 
 // @notice generic unpack data
 // @param data: The packed data
@@ -18,6 +19,15 @@ func unpack_data{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(data: felt, index: felt, mask_size: felt) -> (score: felt) {
     alloc_locals;
+
+    // Optional setup: if index >= 128, we use the upper half only
+    // This is required because unsigned_div_rem() doesn't like values above 2^128.
+    let is_high_bits = is_le_felt(128, index);
+    if (is_high_bits == 1) {
+        let (high, _) = split_felt(data);
+        let (_score) = unpack_data(high, index - 128, mask_size);
+        return (score=_score);
+    }
 
     // 1. Create a 8-bit mask at and to the left of the index
     // E.g., 000111100 = 2**2 + 2**3 + 2**4 + 2**5
