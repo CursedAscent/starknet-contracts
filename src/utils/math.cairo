@@ -22,11 +22,12 @@ func clamp{range_check_ptr}(min: felt, value: felt, max: felt) -> (res: felt) {
     return (res=max);
 }
 
-// @notice Multiply a value by percent, then divide it by 100. Reminder is discarded.
-// @param value: initial value to scale
-// @param percent: percentage factor
-// @return the scaled value
-func percentage{range_check_ptr}(value: felt, percent: felt) -> felt {
-    let (res, _) = unsigned_div_rem(value * percent, 100);
+// @notice Multiply a value by factor, then divide it by divider (reminder is discarded).
+// @param value: initial value
+// @param factor: multiplier to value
+// @param divider: divider
+// @return the resulting value
+func mul_then_div{range_check_ptr}(value: felt, factor: felt, divider: felt) -> felt {
+    let (res, _) = unsigned_div_rem(value * factor, divider);
     return (res);
 }

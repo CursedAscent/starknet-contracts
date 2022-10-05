@@ -1,6 +1,6 @@
 %lang starknet
 
-from src.utils.math import clamp, percentage
+from src.utils.math import clamp, mul_then_div
 
 @external
 func test_clamp{range_check_ptr}() {
@@ -27,13 +27,15 @@ func test_clamp{range_check_ptr}() {
 }
 
 @external
-func test_percentage{range_check_ptr}() {
-    assert percentage(10, 80) = 8;
-    assert percentage(26, 50) = 13;
-    assert percentage(1, 100) = 1;
-    assert percentage(10, 99) = 9;
-    assert percentage(10, 101) = 10;
-    assert percentage(10, 109) = 10;
-    assert percentage(10, 110) = 11;
+func test_mul_then_div{range_check_ptr}() {
+    assert mul_then_div(10, 80, 100) = 8;
+    assert mul_then_div(26, 50, 100) = 13;
+    assert mul_then_div(1, 100, 100) = 1;
+    assert mul_then_div(10, 99, 100) = 9;
+    assert mul_then_div(10, 101, 100) = 10;
+    assert mul_then_div(10, 109, 100) = 10;
+    assert mul_then_div(10, 110, 100) = 11;
+
+    assert mul_then_div(10, 100, 110) = 9;
     return ();
 }
