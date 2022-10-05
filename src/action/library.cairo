@@ -49,12 +49,12 @@ namespace ActionLib {
         let value2 = unpacked_action.value2 * ATTRIBUTE_SHIFT._4;
         let attr3 = unpacked_action.attr3 * ATTRIBUTE_SHIFT._5;
         let value3 = unpacked_action.value3 * ATTRIBUTE_SHIFT._6;
-        let target1 = unpacked_action.target * ATTRIBUTE_SHIFT._7;
-        let target_value1 = unpacked_action.target_value * ATTRIBUTE_SHIFT._8;
-        let target2 = unpacked_action.target * ATTRIBUTE_SHIFT._9;
-        let target_value2 = unpacked_action.target_value * ATTRIBUTE_SHIFT._10;
-        let target3 = unpacked_action.target * ATTRIBUTE_SHIFT._11;
-        let target_value3 = unpacked_action.target_value * ATTRIBUTE_SHIFT._12;
+        let target1 = unpacked_action.target1 * ATTRIBUTE_SHIFT._7;
+        let target_value1 = unpacked_action.target_value1 * ATTRIBUTE_SHIFT._8;
+        let target2 = unpacked_action.target2 * ATTRIBUTE_SHIFT._9;
+        let target_value2 = unpacked_action.target_value2 * ATTRIBUTE_SHIFT._10;
+        let target3 = unpacked_action.target3 * ATTRIBUTE_SHIFT._11;
+        let target_value3 = unpacked_action.target_value3 * ATTRIBUTE_SHIFT._12;
 
         return (
             packed_action=attr1 + value1 + attr2 + value2 + attr3 + value3 + target1 + target_value1 + target2 + target_value2 + target3 + target_value3,
