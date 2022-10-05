@@ -31,22 +31,25 @@ namespace EnemyBuilderLib {
         let (local damage_coef) = IEnemyCollection.get_damage_coef(
             contract_address=enemy_ref.collection_addr, token_id=enemy_ref.token_id
         );
-        let (local health_points) = IEnemyCollection.get_health_points(
+        let (local max_health_points) = IEnemyCollection.get_max_health_points(
             contract_address=enemy_ref.collection_addr, token_id=enemy_ref.token_id
         );
+        local health_points = max_health_points;
 
         local enemy: Enemy = Enemy(
+            damage_coef=damage_coef,
+            protection_points_coef=protection_points_coef,
+            armor_coef=armor_coef,
+            max_health_points=max_health_points,
+            health_points=health_points,
+            protection_points=0,
+            active_effects=0,
             enemy_ref=enemy_ref,
             id=-1,
             action_list_len=action_list_len,
             action_list=action_list,
-            next_action=0,
+            next_action_id=0,
             previous_action=0,
-            armor_coef=armor_coef,
-            protection_points_coef=protection_points_coef,
-            damage_coef=damage_coef,
-            health_points=health_points,
-            active_effects=0
             );
 
         return (enemy=enemy);

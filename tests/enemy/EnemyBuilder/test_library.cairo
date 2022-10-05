@@ -53,7 +53,7 @@ func test_build_partial_enemy{syscall_ptr: felt*, range_check_ptr}() {
     assert enemy.armor_coef = 0xA;
     assert enemy.protection_points_coef = 0xB;
     assert enemy.damage_coef = 0xC;
-    assert enemy.health_points = 0xA1;
+    assert enemy.max_health_points = 0xA1;
 
     return ();
 }

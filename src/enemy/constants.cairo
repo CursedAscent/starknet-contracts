@@ -7,5 +7,5 @@ struct EnemyData {
     armor_coef: felt,
     protection_points_coef: felt,
     damage_coef: felt,
-    health_points: felt,
+    max_health_points: felt,
 }

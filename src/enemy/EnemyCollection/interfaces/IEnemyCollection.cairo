@@ -73,7 +73,7 @@ namespace IEnemyCollection {
 
     // @notice Get the based health points of an enemy
     // @param token_id: the id of the enemy in the collection
-    // @return health_points: the enemy's base health points
-    func get_health_points(token_id: felt) -> (health_points: felt) {
+    // @return max_health_points: the enemy's base health points
+    func get_max_health_points(token_id: felt) -> (max_health_points: felt) {
     }
 }

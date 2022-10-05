@@ -11,15 +11,7 @@ from src.enemy.constants import EnemyData
 //
 
 @storage_var
-func action_list_len(token_id: felt) -> (action_list_len: felt) {
-}
-
-@storage_var
-func action(token_id: felt, action_id: felt) -> (packed_action: felt) {
-}
-
-@storage_var
-func armor_coef(token_id: felt) -> (armor_coef: felt) {
+func damage_coef(token_id: felt) -> (damage_coef: felt) {
 }
 
 @storage_var
@@ -27,11 +19,19 @@ func protection_points_coef(token_id: felt) -> (protection_points_coef: felt) {
 }
 
 @storage_var
-func damage_coef(token_id: felt) -> (damage_coef: felt) {
+func armor_coef(token_id: felt) -> (armor_coef: felt) {
 }
 
 @storage_var
-func health_points(token_id: felt) -> (health_points: felt) {
+func max_health_points(token_id: felt) -> (max_health_points: felt) {
+}
+
+@storage_var
+func action_list_len(token_id: felt) -> (action_list_len: felt) {
+}
+
+@storage_var
+func action(token_id: felt, action_id: felt) -> (packed_action: felt) {
 }
 
 //
@@ -86,7 +86,7 @@ func _initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     armor_coef.write(data_len, enemyData.armor_coef);
     protection_points_coef.write(data_len, enemyData.protection_points_coef);
     damage_coef.write(data_len, enemyData.damage_coef);
-    health_points.write(data_len, enemyData.health_points);
+    max_health_points.write(data_len, enemyData.max_health_points);
 
     return _initializer(data_len - 1, data - EnemyData.SIZE);
 }
@@ -191,12 +191,12 @@ func get_damage_coef{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 
 // @notice Get the based health points of an enemy
 // @param token_id: the id of the enemy in the collection
-// @return health_points: the enemy's base health points
+// @return max_health_points: the enemy's base health points
 @view
-func get_health_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func get_max_health_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_id: felt
-) -> (health_points: felt) {
-    return health_points.read(token_id);
+) -> (max_health_points: felt) {
+    return max_health_points.read(token_id);
 }
 
 //
