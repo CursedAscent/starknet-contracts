@@ -41,6 +41,7 @@ namespace EnemyBuilderLib {
             action_list_len=action_list_len,
             action_list=action_list,
             next_action=0,
+            previous_action=0,
             armor_coef=armor_coef,
             protection_points_coef=protection_points_coef,
             damage_coef=damage_coef,

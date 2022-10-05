@@ -26,7 +26,7 @@ namespace ISceneLogic {
     // @param seed: seed to initialize PRNG
     // @param player_len: UNUSED (pointer to single value)
     // @param player: a pointer to the player's instance
-    // @param card_picked: the card picked by the player
+    // @param player_action: the action of the card picked by the player (packed)
     // @param target_ids_len: the length of target_ids array
     // @param target_ids: array containing all the targetted enemies computed by the game mode
     // @return scene_state: the scene's context
@@ -35,7 +35,7 @@ namespace ISceneLogic {
         seed: felt,
         player_len: felt,
         player: Player*,
-        card_picked: Card,
+        player_action: felt,
         target_ids_len: felt,
         target_ids: felt*,
     ) -> (scene_state: SceneState) {
