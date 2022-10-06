@@ -12,6 +12,7 @@ from src.card.Card import Card
 
 from src.action.constants import Action, AttributeEnum, ATTRIBUTE_SHIFT, ATTRIBUTE_BIT_POSITION
 from src.utils.data_manipulation import unpack_data, insert_data, implace_insert_data
+from src.utils.math import clamp, mul_then_div
 
 namespace ActionLib {
     //
@@ -111,18 +112,18 @@ namespace ActionLib {
         local scene: SceneState;
         local player: PlayerState;
         let (local action: Action) = unpack(packed_action);
-        local source: Entity*;
         local source_len = 0;  // unused
 
         // first attribute
+        local source1: Entity*;
         if (source_id == -1) {
-            source = &player;
+            source1 = &player;
         } else {
-            source = &scene_state + 1 + source_id * Enemy.SIZE;
+            source1 = &scene_state + 1 + source_id * Enemy.SIZE;
         }
         let (local enemies1, local player1) = _apply_attribute(
             source_len,
-            source,
+            source1,
             scene_state.enemies_len,
             scene_state.enemies,
             player,
@@ -134,14 +135,15 @@ namespace ActionLib {
         );
 
         // second attribute
+        local source2: Entity*;
         if (source_id == -1) {
-            source = &player1;
+            source2 = &player1;
         } else {
-            source = &enemies1 + source_id * Enemy.SIZE;
+            source2 = &enemies1 + source_id * Enemy.SIZE;
         }
         let (local enemies2, local player2) = _apply_attribute(
             source_len,
-            source,
+            source2,
             scene_state.enemies_len,
             scene_state.enemies,
             player,
@@ -153,14 +155,15 @@ namespace ActionLib {
         );
 
         // third attribute
+        local source3: Entity*;
         if (source_id == -1) {
-            source = &player2;
+            source3 = &player2;
         } else {
-            source = &enemies2 + source_id * Enemy.SIZE;
+            source3 = &enemies2 + source_id * Enemy.SIZE;
         }
         let (local enemies3, local player3) = _apply_attribute(
             source_len,
-            source,
+            source3,
             scene_state.enemies_len,
             scene_state.enemies,
             player,
@@ -310,87 +313,288 @@ namespace ActionLib {
     ) -> (new_target: Entity) {
         alloc_locals;
         let (__fp__, _) = get_fp_and_pc();
+        local s = [source];
+        local t = [target];
+        local new_target_state = alloc();  // hp, pp and active_effects (3 felts)
+        // local new_source_state = alloc();  // hp, pp and active_effects (3 felts)
 
-        if (attribute == '') {
+        if (attribute == AttributeEnum.NO_ATTRIBUTE) {
+            no_attribute:
             local new_target = alloc();
             memcpy(new_target, target, target_len);
             return new_target;
         }
-        if (attribute == 'DH') {
-            local damage = value;  // todo: apply damage & armor coef, substract pp from target, substract result to target.hp, clamp(0, max_health_point)
-            return (new_target=insert_data(HEALTH_POINTS_INDEX, 1, &damage, target_len, target));
+        if (attribute == AttributeEnum.DIRECT_HIT) {
+            // todo: update source here (NOT AFTER dh LABEL)
+            dh:
+            local damage = mul_then_div(mul_then_div(value, s.damage_coef, 100), 100, t.armor_coef);
+            tempvar new_pp = clamp(0, t.protection_point - damage, t.protection_point);
+            tempvar new_hp;
+            if (new_pp == 0) {
+                new_hp = clamp(0, t.health_points - (damage - t.protection_point), t.max_health_point);
+            } else {
+                new_hp = t.health_points;
+            }
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = new_pp;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
         }
-        if (attribute == 'AH') {
-            local damage = value;  // todo: apply damage coef, substract result to target.hp, clamp(0, max_health_point)
-            return (new_target=insert_data(HEALTH_POINTS_INDEX, 1, &damage, target_len, target));
+        if (attribute == AttributeEnum.ATTACK_HEALTH) {
+            local damage = mul_then_div(value, s.damage_coef);
+            local new_hp = clamp(0, t.health_points - damage, t.max_health_point);
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = t.protection_points;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
         }
-        if (attribute == 'BS') {
+        if (attribute == AttributeEnum.BLEEDING_STACKS) {
             // local new_active_effect = add_active_effect(target.active_effect, 'BS', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'PS') {
+        if (attribute == AttributeEnum.POISON_STACKS) {
             // local new_active_effect = add_active_effect(target.active_effect, 'PS', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'PA') {
+        if (attribute == AttributeEnum.PASSIVE_ATTACK) {
             // local new_active_effect = add_active_effect(target.active_effect, 'PA', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'PP') {
-            local protection = value;  // todo: apply protection point coef, add to target.pp
-            return (
-                new_target=insert_data(PROTECTION_POINTS_INDEX, 1, &protection, target_len, target),
-            );
+        if (attribute == AttributeEnum.PROTECTION_POINT) {
+            local new_pp = mul_then_div(value, t.protection_coef, 100) + t.protection_point;
+
+            [new_target_state] = t.health_points;
+            [new_target_state + 1] = new_pp;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
         }
-        if (attribute == 'AA') {
+        if (attribute == AttributeEnum.HEALTH_POINT) {
+            // todo: apply damage_coef? otherwise there is no scaling
+            local new_hp = clamp(0, t.health_points + value, t.max_health_point);
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = t.protection_points;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
+        }
+        if (attribute == AttributeEnum.ADD_ARMOR) {
             // local armor = value;  // todo: add to existing armor in active_effect (ONLY IF add_active_effect overwrite instead of adding)
             // local new_active_effect = add_active_effect(target.active_effect, 'AA', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'WD') {
+        if (attribute == AttributeEnum.CLEANSE_DEBUFF) {
+            cleanse_debuff:
+            // local new_active_effect = remove_active_effect(target.active_effect, 'ALL_DEBUFF', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.ATTACK_BONUS) {
+            // local new_active_effect = add_active_effect(target.active_effect, 'AB', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.PROTECTION_BONUS) {
+            // local new_active_effect = add_active_effect(target.active_effect, 'PB', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.DOUBLE_DAMAGE) {
+            // local new_active_effect = add_active_effect(target.active_effect, 'DD', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.DOUBLE_PROTECTION) {
+            // local new_active_effect = add_active_effect(target.active_effect, 'DP', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.WEAKEN_DEFENSE) {
+            wd:
             // local new_active_effect = add_active_effect(target.active_effect, 'WD', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'WA') {
+        if (attribute == AttributeEnum.WEAKEN_ATTACK) {
             // local new_active_effect = add_active_effect(target.active_effect, 'WA', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'WP') {
+        if (attribute == AttributeEnum.WEAKEN_PROTECTION) {
             // local new_active_effect = add_active_effect(target.active_effect, 'WP', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'PPS') {
+        if (attribute == AttributeEnum.PERMANENT_PROTECTION) {
             // local new_active_effect = add_active_effect(target.active_effect, 'PPS', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
         }
-        if (attribute == 'GAB') {
+        if (attribute == AttributeEnum.GENERATE_ATTACK_BONUS) {
             // local new_active_effect = add_active_effect(target.active_effect, 'GAB', value);
-            // return (
-            //     new_target=insert_data(ACTIVE_EFFECTS_INDEX, 1, &new_active_effect, target_len, target),
-            // );
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.DH_IF_TARGET_BLEED) {
+            // todo: check if target bleed
+            tempvar is_bleeding = 1;
+
+            jmp dh if is_bleeding != 0;
+            jmp no_attribute;
+        }
+        if (attribute == AttributeEnum.HEAL_BLEED_AMOUNT) {
+            tempvar target_bleed_stack = 10;  // todo: get bleed stack from target
+            local new_hp = clamp(0, s.health_points + target_bleed_stack, t.max_health_point);
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = t.protection_points;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
+        }
+        if (attribute == AttributeEnum.DH_THEN_PP) {
+            local damage = mul_then_div(mul_then_div(value, s.damage_coef, 100), 100, t.armor_coef);
+            local new_pp = clamp(0, damage - t.protection_point, damage);
+            // todo: source has s.protection_points + new_pp
+
+            jmp dh;
+        }
+        if (attribute == AttributeEnum.DH_THEN_HEAL) {
+            local damage = mul_then_div(mul_then_div(value, s.damage_coef, 100), 100, t.armor_coef);
+            local new_hp = clamp(0, damage - t.protection_point, damage);
+            // todo: source has s.health_point + new_hp
+
+            jmp dh;
+        }
+        if (attribute == AttributeEnum.DH_FOR_DEBUFF_COUNT) {
+            local damage_amount = value * 3;  // todo: replace 3 by nb of debuffs on target
+            local damage = mul_then_div(mul_then_div(damage_amount, s.damage_coef, 100), 100, t.armor_coef);
+            tempvar new_pp = clamp(0, t.protection_point - damage, t.protection_point);
+            tempvar new_hp;
+            if (new_pp == 0) {
+                new_hp = clamp(0, t.health_points - (damage - t.protection_point), t.max_health_point);
+            } else {
+                new_hp = t.health_points;
+            }
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = new_pp;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
+        }
+        if (attribute == AttributeEnum.LOOSE_HP_THEN_DH) {
+            // todo: check if target bleed
+            tempvar is_bleeding = 1;
+
+            jmp dh if is_bleeding != 0;
+            jmp no_attribute;
+        }
+        if (attribute == AttributeEnum.CLEANSE_OR_HP_PP) {
+            // if has no debuff
+            local new_pp = mul_then_div(value, t.protection_coef, 100) + t.protection_point;
+            // todo: apply damage_coef? otherwise there is no scaling
+            local new_hp = clamp(0, t.health_points + value, t.max_health_point);
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = new_pp;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
+
+            // else
+            jmp cleanse_debuff;
+        }
+        if (attribute == AttributeEnum.LOOSE_HP) {
+            // todo: source loose 'value' hp
+
+            [new_target_state] = t.health_points;
+            [new_target_state + 1] = t.protection_points;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
+        }
+        if (attribute == AttributeEnum.WD_IF_TARGET_POISONED) {
+            // todo: check if target is poisoned
+            tempvar is_poisoned = 1;
+
+            jmp wd if is_poisoned != 0;
+            jmp no_attribute;
+        }
+        if (attribute == AttributeEnum.PASSIVE_POISON) {
+            // local new_active_effect = add_active_effect(target.active_effect, 'PO', value);
+
+            // [new_target_state] = t.health_points;
+            // [new_target_state + 1] = t.protection_points;
+            // [new_target_state + 2] = new_active_effect;
+            // jmp end;
+        }
+        if (attribute == AttributeEnum.ATTACK_HEALTH_FOR_POISON_COUNT) {
+            local damage_amount = value * 3;  // todo: replace 3 by nb of poison on target
+            local damage = mul_then_div(mul_then_div(damage_amount, s.damage_coef, 100), 100, t.armor_coef);
+            tempvar new_pp = clamp(0, t.protection_point - damage, t.protection_point);
+            tempvar new_hp;
+            if (new_pp == 0) {
+                new_hp = clamp(0, t.health_points - (damage - t.protection_point), t.max_health_point);
+            } else {
+                new_hp = t.health_points;
+            }
+
+            [new_target_state] = new_hp;
+            [new_target_state + 1] = new_pp;
+            [new_target_state + 2] = t.active_effects;
+            jmp end;
         }
 
-        // should not be executed
-        assert 0 = 1;
-        local new_target = alloc();
-        memcpy(new_target, target, target_len);
-        return new_target;
+        assert 0 = 1;  // unknown attribute
+
+        end:
+        return (
+            new_target=insert_data(HEALTH_POINTS_INDEX, 3, new_target_state, target_len, target)
+        );
     }
 
     func _fill_target_with_selection{

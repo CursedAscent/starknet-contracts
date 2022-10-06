@@ -5,17 +5,17 @@
 // Description of an action in the game.
 // Due to Cairo limitation, we decided to store this data packed in one felt.
 struct Action {
-    attr1: felt,  // short string
+    attr1: felt,  // AttributeEnum
     value1: felt,
-    attr2: felt,  // short string
+    attr2: felt,  // AttributeEnum
     value2: felt,
-    attr3: felt,  // short string
+    attr3: felt,  // AttributeEnum
     value3: felt,
-    target1: felt,  // short string
+    target1: felt,  // AttributeEnum
     target_value1: felt,
-    target2: felt,  // short string
+    target2: felt,  // AttributeEnum
     target_value2: felt,
-    target3: felt,  // short string
+    target3: felt,  // AttributeEnum
     target_value3: felt,
 }
 
@@ -39,6 +39,13 @@ namespace AttributeEnum {
     const PROTECTION_POINT = 'PP';
     const HEALTH_POINT = 'HP';
     const ADD_ARMOR = 'AA';
+    const CLEANSE_DEBUFF = 'CB';
+
+    // buffs (value is amount)
+    const ATTACK_BONUS = 'AB';
+    const PROTECTION_BONUS = 'PB';
+    const DOUBLE_DAMAGE = 'DD';
+    const DOUBLE_PROTECTION = 'DP';
 
     // Debuffs (value is amount of stack)
     const WEAKEN_DEFENSE = 'WD';
@@ -48,6 +55,18 @@ namespace AttributeEnum {
     // Powers (value may be used)
     const PERMANENT_PROTECTION = 'PPS';
     const GENERATE_ATTACK_BONUS = 'GAB';
+
+    // Card-specific attributes
+    const DH_IF_TARGET_BLEED = 'EX';
+    const DH_THEN_PP = 'HB';
+    const DH_THEN_HEAL = 'SD';
+    const DH_FOR_DEBUFF_COUNT = 'ABS';
+    const HEAL_BLEED_AMOUNT = 'BL';
+    const CLEANSE_OR_HP_PP = 'HO';
+    const LOOSE_HP = 'BP';
+    const WD_IF_TARGET_POISONED = 'SI';
+    const PASSIVE_POISON = 'PO';
+    const ATTACK_HEALTH_FOR_POISON_COUNT = 'LI';
 
     // Targets (value is number of repetition)
     const SELECTED_TARGET = 'TS';
