@@ -39,7 +39,7 @@ func add_collection{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
 ) {
     // check if the collection is an EnemyCollection
     // TODO: find a better check to see if get_health_points() did not fail
-    let (hp) = IEnemyCollection.get_health_points(collection_addr, 0);
+    let (hp) = IEnemyCollection.get_max_health_points(collection_addr, 0);
     assert_not_zero(hp);
 
     return ACatalog.add_collection(game_mode, collection_addr);
