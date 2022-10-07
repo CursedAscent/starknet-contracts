@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
-from src.action.constants import Action, AttributeEnum, ATTRIBUTE_SHIFT, ATTRIBUTE_BIT_POSITION
+from src.action.constants import Action, AttributeEnum, ACTION_SHIFT, ACTION_BIT_POSITION
 from src.action.library import ActionLib
 
 @external
@@ -12,8 +12,8 @@ func test_pack{
     alloc_locals;
 
     local attribute: Action = Action(AttributeEnum.DIRECT_HIT, 420, AttributeEnum.PROTECTION_POINT, 777, 0, 0, AttributeEnum.SELECTED_TARGET, 1, AttributeEnum.ALL_TARGET, 2, 0, 0);
-    let (local packed) = ActionLib.pack(attribute);
-    let (local unpacked: Action) = ActionLib.unpack(packed);
+    let (local packed) = ActionLib.pack_action(attribute);
+    let (local unpacked: Action) = ActionLib.unpack_action(packed);
 
     assert unpacked.attr1 = attribute.attr1;
     assert unpacked.value1 = attribute.value1;

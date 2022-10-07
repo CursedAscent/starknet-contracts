@@ -14,6 +14,7 @@ from src.player.Player import Player
 from src.card.Card import Card
 from src.utils.constants import TokenRef
 from src.action.library import ActionLib
+from src.action.constants import PackedActionHistory
 
 //
 // Constants
@@ -85,9 +86,17 @@ func next_step{
     player_action: felt,
     target_ids_len: felt,
     target_ids: felt*,
-) -> (scene_state: SceneState, player: Player, seed: felt) {
-    let (scene_state, player, seed) = ActionLib.play_action(scene_state, player, 0, 0, -1, seed);
-    return (scene_state, player, seed);
+) -> (
+    scene_state: SceneState,
+    player: Player,
+    history_len: felt,
+    history: PackedActionHistory*,
+    seed: felt,
+) {
+    let (scene_state, player, history_len, history, seed) = ActionLib.play_action(
+        scene_state, player, 0, 0, -1, seed
+    );
+    return (scene_state, player, history_len, history, seed);
 }
 
 //

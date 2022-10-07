@@ -21,6 +21,54 @@ struct Action {
 
 using PackedAction = felt;
 
+// Description of the result of an action (in the context of a scene).
+struct ActionHistory {
+    attribute: felt,
+    computed_value: felt,
+    source_id: felt,
+    target_id: felt,
+}
+
+using PackedActionHistory = felt;  // 4 ActionHistory packed
+
+namespace ACTION_HISTORY_BIT_POSITION {
+    const _1 = 0;  // byte 0
+    const _2 = 24;  // byte 3
+    const _3 = 40;  // byte 5
+    const _4 = 48;  // byte 6
+    const _5 = 56;  // byte 7
+    const _6 = 80;  // byte 10
+    const _7 = 96;  // byte 12
+    const _8 = 104;  // byte 13
+    const _9 = 112;  // byte 14
+    const _10 = 136;  // byte 17
+    const _11 = 152;  // byte 19
+    const _12 = 160;  // byte 20
+    const _13 = 168;  // byte 21
+    const _14 = 192;  // byte 24
+    const _15 = 206;  // byte 26
+    const _16 = 212;  // byte 27
+}
+
+namespace ACTION_HISTORY_SHIFT {
+    const _1 = 2 ** 0;
+    const _2 = 2 ** 24;
+    const _3 = 2 ** 40;
+    const _4 = 2 ** 48;
+    const _5 = 2 ** 56;
+    const _6 = 2 ** 80;
+    const _7 = 2 ** 96;
+    const _8 = 2 ** 104;
+    const _9 = 2 ** 112;
+    const _10 = 2 ** 136;
+    const _11 = 2 ** 152;
+    const _12 = 2 ** 160;
+    const _13 = 2 ** 168;
+    const _14 = 2 ** 192;
+    const _15 = 2 ** 206;
+    const _16 = 2 ** 212;
+}
+
 // Description of the possible attributes in Action.
 // 3 bytes MAXIMUM
 // todo: reorganize by how value is interpreted (bonus amount, stack amount, repetition, ...)
@@ -75,7 +123,7 @@ namespace AttributeEnum {
     const PLAYER_TARGET = 'TP';
 }
 
-namespace ATTRIBUTE_BIT_POSITION {
+namespace ACTION_BIT_POSITION {
     const _1 = 0;  // byte 0
     const _2 = 24;  // byte 3
     const _3 = 40;  // byte 5
@@ -90,7 +138,7 @@ namespace ATTRIBUTE_BIT_POSITION {
     const _12 = 210;  // byte 25
 }
 
-namespace ATTRIBUTE_SHIFT {
+namespace ACTION_SHIFT {
     const _1 = 2 ** 0;
     const _2 = 2 ** 24;
     const _3 = 2 ** 40;

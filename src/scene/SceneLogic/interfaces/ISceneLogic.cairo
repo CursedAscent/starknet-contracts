@@ -7,6 +7,7 @@ from src.scene.SceneState import SceneState
 from src.session.Session import Session
 from src.player.Player import Player
 from src.card.Card import Card
+from src.action.constants import PackedActionHistory
 
 from src.utils.constants import TokenRef
 
@@ -34,11 +35,17 @@ namespace ISceneLogic {
         scene_state: SceneState,
         seed: felt,
         player_len: felt,
-        player: Player*,
+        player: Player,
         player_action: felt,
         target_ids_len: felt,
         target_ids: felt*,
-    ) -> (scene_state: SceneState, player: Player, seed: felt) {
+    ) -> (
+        scene_state: SceneState,
+        player: Player,
+        history_len: felt,
+        history: PackedActionHistory*,
+        seed: felt,
+    ) {
     }
 
     //
