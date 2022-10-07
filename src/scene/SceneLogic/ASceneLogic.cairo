@@ -73,6 +73,14 @@ namespace ASceneLogic {
     // Getters
     //
 
+    func get_enemy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        enemy_id: felt
+    ) -> (enemy: TokenRef) {
+        let (token_ref) = enemy_list.read(enemy_id);
+
+        return (enemy=token_ref);
+    }
+
     func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         event_id_list_len: felt, event_id_list: felt*
     ) {

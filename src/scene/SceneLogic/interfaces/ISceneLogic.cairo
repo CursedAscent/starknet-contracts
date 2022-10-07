@@ -38,7 +38,7 @@ namespace ISceneLogic {
         player_action: felt,
         target_ids_len: felt,
         target_ids: felt*,
-    ) -> (scene_state: SceneState) {
+    ) -> (scene_state: SceneState, player: Player, seed: felt) {
     }
 
     //
