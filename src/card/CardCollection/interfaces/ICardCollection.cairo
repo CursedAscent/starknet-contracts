@@ -5,6 +5,8 @@
 
 %lang starknet
 
+from src.action.constants import PackedAction
+
 @contract_interface
 namespace ICardCollection {
     //
@@ -35,7 +37,7 @@ namespace ICardCollection {
     // @notice Get the action of the card
     // @param token_id: the id of the card in the collection
     // @return packed_action: a packed, on-chain description of the card action
-    func get_action(token_id: felt) -> (packed_action: felt) {
+    func get_action(token_id: felt) -> (packed_action: PackedAction) {
     }
 
     // @notice Get the class associated with the given card

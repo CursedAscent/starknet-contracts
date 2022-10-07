@@ -4,7 +4,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
 from src.tokens.ERC721.AERC721 import AERC721
-from src.enemy.constants import EnemyData
+from src.enemy.constants import ActionList, EnemyData
+from src.action.constants import PackedAction
 
 //
 // Storage
@@ -31,7 +32,7 @@ func action_list_len(token_id: felt) -> (action_list_len: felt) {
 }
 
 @storage_var
-func action(token_id: felt, action_id: felt) -> (packed_action: felt) {
+func action(token_id: felt, action_id: felt) -> (packed_action: PackedAction) {
 }
 
 //
@@ -155,7 +156,7 @@ func get_action_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 @view
 func get_action{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_id: felt, action_id: felt
-) -> (packed_action: felt) {
+) -> (packed_action: PackedAction) {
     return action.read(token_id, action_id);
 }
 
@@ -205,9 +206,9 @@ func get_max_health_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 
 func _fill_action_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_id: felt
-) -> (action_list: (felt, felt, felt, felt, felt, felt, felt, felt)) {
+) -> (action_list: ActionList) {
     alloc_locals;
-    local action_list: (felt, felt, felt, felt, felt, felt, felt, felt);
+    local action_list: ActionList;
 
     // You can't iterate over a tuple since they only accept constant value
     let (packed_action) = action.read(token_id, 0);

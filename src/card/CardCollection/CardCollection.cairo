@@ -3,6 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from src.tokens.ERC721.AERC721 import AERC721
+from src.action.constants import PackedAction
 from src.card.constants import CardData
 
 //
@@ -10,7 +11,7 @@ from src.card.constants import CardData
 //
 
 @storage_var
-func action(token_id: felt) -> (packed_action: felt) {
+func action(token_id: felt) -> (packed_action: PackedAction) {
 }
 
 @storage_var
@@ -99,7 +100,7 @@ func tokenURI{
 @view
 func get_action{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_id: felt
-) -> (packed_action: felt) {
+) -> (packed_action: PackedAction) {
     return action.read(token_id);
 }
 

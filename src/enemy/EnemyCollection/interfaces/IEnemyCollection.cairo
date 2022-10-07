@@ -5,6 +5,8 @@
 
 %lang starknet
 
+from src.action.constants import PackedAction
+
 @contract_interface
 namespace IEnemyCollection {
     //
@@ -50,7 +52,7 @@ namespace IEnemyCollection {
     // @param token_id: the id of the enemy in the collection
     // @param action_id: the id of the action to retrieve
     // @return action: the retrieved action packed in a felt
-    func get_action(token_id: felt, action_id: felt) -> (packed_action: felt) {
+    func get_action(token_id: felt, action_id: felt) -> (packed_action: PackedAction) {
     }
 
     // @notice Get the armor base coefficient of an enemy
