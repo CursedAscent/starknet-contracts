@@ -5,14 +5,14 @@ from src.utils.math import clamp, mul_then_div
 @external
 func test_clamp{range_check_ptr}() {
     alloc_locals;
-    let (local res1) = clamp(10, 15, 20);
-    let (local res2) = clamp(10, 25, 20);
-    let (local res3) = clamp(10, 5, 20);
-    let (local res4) = clamp(10, 10, 20);
-    let (local res5) = clamp(10, 20, 20);
-    let (local res6) = clamp(10, -1, 20);
-    let (local res7) = clamp(-1, 5, 20);
-    let (local res8) = clamp(-10, -7, -1);
+    let res1 = clamp(10, 15, 20);
+    let res2 = clamp(10, 25, 20);
+    let res3 = clamp(10, 5, 20);
+    let res4 = clamp(10, 10, 20);
+    let res5 = clamp(10, 20, 20);
+    let res6 = clamp(10, -1, 20);
+    let res7 = clamp(-1, 5, 20);
+    let res8 = clamp(-10, -7, -1);
 
     assert res1 = 15;
     assert res2 = 20;

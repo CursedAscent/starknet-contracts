@@ -19,7 +19,7 @@ struct Action {
     target_value3: felt,
 }
 
-// typename PackedAttribute = felt;
+using PackedAction = felt;
 
 // Description of the possible attributes in Action.
 // 3 bytes MAXIMUM

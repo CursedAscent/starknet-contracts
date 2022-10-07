@@ -80,7 +80,7 @@ func insert_data{syscall_ptr: felt*, range_check_ptr}(
 // @param value: the new data
 // @param data_len: the length of the data to modify
 // @param data: the data to modify
-func implace_insert_data{syscall_ptr: felt*, range_check_ptr}(
+func inplace_insert_data{syscall_ptr: felt*, range_check_ptr}(
     index: felt, value_len: felt, value: felt*, data_len: felt, data: felt*, dest: felt*
 ) -> (new_data: felt*) {
     alloc_locals;
