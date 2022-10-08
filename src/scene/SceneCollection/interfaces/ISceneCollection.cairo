@@ -40,6 +40,12 @@ namespace ISceneCollection {
     func get_logic_contract_addr(token_id: felt) -> (logic_contract_addr: felt) {
     }
 
+    // @notice Get the type of the scene tied to this NFT
+    // @param token_id: the id of the scene in the collection
+    // @return scene_type: the type of the scene (SceneTypeEnum)
+    func get_scene_type(token_id: felt) -> (scene_type: felt) {
+    }
+
     // @notice Get the list of event ids from the logic contract
     // @param token_id: the id of the scene in the collection
     // @return event_id_list_len, event_id_list: the length of the event id list, the list of event ids

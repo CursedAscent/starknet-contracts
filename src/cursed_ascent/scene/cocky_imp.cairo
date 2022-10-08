@@ -7,6 +7,7 @@ from starkware.cairo.common.math import unsigned_div_rem
 
 from starkware.cairo.common.registers import get_fp_and_pc
 from src.scene.SceneLogic.ASceneLogic import ASceneLogic
+from src.scene.constants import SceneTypeEnum
 from src.session.Session import Session
 from src.scene.SceneState import SceneState, EnemyList
 from src.enemy.Enemy import Enemy
@@ -74,7 +75,7 @@ func initialize_scene{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         action_list_len=0,
         action_list=(0, 0, 0, 0, 0, 0, 0, 0),
         next_action_id=0,
-        );
+    );
 
     return (
         scene_state=SceneState(1, (imp, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY), EVENT_LIST.INTRO, 0),
@@ -163,15 +164,25 @@ func next_step{
 // Getters
 //
 
+// @notice Get the type of the scene tied to this NFT
+// @param token_id: the id of the scene in the collection
+// @return scene_type: the type of the scene (SceneTypeEnum)
+@view
+func get_scene_type(token_id: felt) -> (scene_type: felt) {
+    return (scene_type=SceneTypeEnum.FIGHT);
+}
+
 func get_event_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     event_id_list_len: felt, event_id_list: felt*
 ) {
+    // todo: not from ASceneLogic anymore
     return ASceneLogic.get_event_id_list();
 }
 
 func get_enemy_id_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     enemy_id_list_len: felt, enemy_id_list: TokenRef*
 ) {
+    // todo: not from ASceneLogic anymore
     return ASceneLogic.get_enemy_id_list();
 }
 

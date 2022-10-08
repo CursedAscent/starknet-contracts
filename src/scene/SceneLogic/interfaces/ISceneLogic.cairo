@@ -47,6 +47,11 @@ namespace ISceneLogic {
     // Getters:
     //
 
+    // @notice Get the type of the scene declared in the contract
+    // @return scene_type: the type of the scene (SceneTypeEnum)
+    func get_scene_type() -> (scene_type: felt) {
+    }
+
     // @notice Get the list of event ids declared in the contract
     // @return event_id_list_len, event_id_list: the length of the event id list, the list of event ids
     func get_event_id_list() -> (event_id_list_len: felt, event_id_list: felt*) {

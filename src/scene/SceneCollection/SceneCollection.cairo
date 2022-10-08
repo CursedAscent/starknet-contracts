@@ -97,6 +97,19 @@ func get_logic_contract_addr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     return logic_addr.read(token_id);
 }
 
+// @notice Get the type of the scene tied to this NFT
+// @param token_id: the id of the scene in the collection
+// @return scene_type: the type of the scene (SceneTypeEnum)
+@view
+func get_scene_type{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    token_id: felt
+) -> (scene_type: felt) {
+    let (scene_logic) = logic_addr.read(token_id);
+
+    let scene_type = ISceneLogic.get_scene_type(scene_logic);
+    return (scene_type);
+}
+
 // @notice Get the list of event ids from the logic contract
 // @param token_id: the id of the scene in the collection
 // @return event_id_list_len, event_id_list: the length of the event id list, the list of event ids
