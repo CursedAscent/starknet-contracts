@@ -5,8 +5,8 @@ from src.utils.xoshiro128.library import Xoshiro128_ss
 
 @external
 func test_xhosiro_next{
-        syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }() {
+    syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
     alloc_locals;
     local seed = 0xDEADBEEF;
 

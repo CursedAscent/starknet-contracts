@@ -38,7 +38,7 @@ func setup_card_collection() {
         context.card_collection_address = deploy_contract("./src/card/CardCollection/CardCollection.cairo", call_data).contract_address
     %}
 
-    return ();  
+    return ();
 }
 
 @external

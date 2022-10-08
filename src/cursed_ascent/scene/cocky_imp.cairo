@@ -40,9 +40,7 @@ namespace EVENT_LIST {
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     enemy_list_len: felt, enemy_list: TokenRef*
 ) {
-    // todo: hard coded event list for ASceneLogic
-    tempvar event_list: felt*;
-    ASceneLogic.initializer(enemy_list_len, enemy_list, 0, event_list);
+    ASceneLogic.initializer(enemy_list_len, enemy_list);
 
     return ();
 }
@@ -55,17 +53,31 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @return scene_state: the scene's context
 @view
 func initialize_scene{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    session_state: Session
+    player: Player
 ) -> (scene_state: SceneState) {
     alloc_locals;
-    local empty_enemy: Enemy;
 
     let (local enemy_id_list_len, local enemy_id_list) = get_enemy_id_list();
 
     let (imp) = _build_imp(0);
 
+    let EMPTY_ENEMY = Enemy(
+        damage_coef=0,
+        protection_points_coef=0,
+        armor_coef=0,
+        max_health_points=0,
+        health_points=0,
+        protection_points=0,
+        active_effects=0,
+        enemy_ref=TokenRef(0, 0),
+        id=-1,
+        action_list_len=0,
+        action_list=(0, 0, 0, 0, 0, 0, 0, 0),
+        next_action_id=0,
+        );
+
     return (
-        scene_state=SceneState(1, (imp, empty_enemy, empty_enemy, empty_enemy, empty_enemy, empty_enemy, empty_enemy, empty_enemy), EVENT_LIST.INTRO, 0),
+        scene_state=SceneState(1, (imp, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY, EMPTY_ENEMY), EVENT_LIST.INTRO, 0),
     );
 }
 

@@ -46,11 +46,11 @@ namespace IGameMode {
     // @param new_state: the new GameState to save in storage
     // @return state: the saved GameState
     func save_state(cur_state: GameState, new_state: GameState) -> (state: GameState) {
-    } 
+    }
 
     // @notice: Draws random cards from the player's deck
     // @param state: the current GameState
     // @return hand_len, hand: the hand array lenght, the array of cards drawn
     func draw_cards(state: GameState) -> (hand_len: felt, hand: Card*) {
-    } 
+    }
 }

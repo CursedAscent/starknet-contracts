@@ -4,7 +4,6 @@
 %lang starknet
 
 from src.scene.SceneState import SceneState
-from src.session.Session import Session
 from src.player.Player import Player
 from src.card.Card import Card
 from src.action.constants import PackedActionHistory, PackedAction
@@ -19,7 +18,7 @@ namespace ISceneLogic {
 
     // @notice Initialize the scene and return a SceneState struct containing its context
     // @return scene_state: the scene's context
-    func initialize_scene() -> (scene_state: SceneState) {
+    func initialize_scene(player: Player) -> (scene_state: SceneState) {
     }
 
     // @notice Computes the next action from a player and the scene actions

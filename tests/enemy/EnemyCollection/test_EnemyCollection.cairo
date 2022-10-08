@@ -23,11 +23,10 @@ func __setup__{
 
 func deploy_EnemyCollection{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> felt {
+}() {
     alloc_locals;
     let (__fp__, _) = get_fp_and_pc();
 
-    local contract_address;
     local name = 'COLL1';
     local symbol = 'C1';
     local total_supply = 1;
@@ -71,10 +70,9 @@ func deploy_EnemyCollection{
         call_data.append(100)
         call_data.append(30)
         context.EnemyCollection_address = deploy_contract("./src/enemy/EnemyCollection/EnemyCollection.cairo", call_data).contract_address
-        contract_address = context.EnemyCollection_address
     %}
 
-    return contract_address;
+    return ();
 }
 
 //

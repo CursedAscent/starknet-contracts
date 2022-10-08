@@ -17,14 +17,16 @@ from starkware.cairo.common.uint256 import (
 )
 
 namespace Xoshiro128_ss {
-
     struct XoshiroState {
         s0: felt,
         s1: felt,
     }
 
     func init{
-        syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
+        syscall_ptr: felt*,
+        bitwise_ptr: BitwiseBuiltin*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
     }(seed: felt) -> (state: XoshiroState) {
         alloc_locals;
         let (s0) = splitmix64(seed);
@@ -33,10 +35,12 @@ namespace Xoshiro128_ss {
 
         return (state=s);
     }
-    
 
     func next{
-        syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
+        syscall_ptr: felt*,
+        bitwise_ptr: BitwiseBuiltin*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
     }(state: XoshiroState) -> (state: XoshiroState, rnd: felt) {
         alloc_locals;
 
