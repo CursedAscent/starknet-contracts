@@ -48,6 +48,10 @@ func __setup__() {
     return ();
 }
 
+//
+// Tests
+//
+
 @external
 func test_name{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
