@@ -18,18 +18,18 @@ from starkware.cairo.common.uint256 import (
 
 namespace Xoshiro128_ss {
 
-    struct State {
+    struct XoshiroState {
         s0: felt,
         s1: felt,
     }
 
     func init{
         syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(seed: felt) -> (state: State) {
+    }(seed: felt) -> (state: XoshiroState) {
         alloc_locals;
         let (s0) = splitmix64(seed);
         let (s1) = splitmix64(s0);
-        let s = State(s0=s0, s1=s1);
+        let s = XoshiroState(s0=s0, s1=s1);
 
         return (state=s);
     }
@@ -37,12 +37,12 @@ namespace Xoshiro128_ss {
 
     func next{
         syscall_ptr: felt*, bitwise_ptr: BitwiseBuiltin*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(state: State) -> (state: State, rnd: felt) {
+    }(state: XoshiroState) -> (state: XoshiroState, rnd: felt) {
         alloc_locals;
 
         local s0 = state.s0;
         local s1 = state.s1;
-        local s: State = State(s0=s0, s1=s1);
+        local s: XoshiroState = XoshiroState(s0=s0, s1=s1);
 
         // result = rotl(s0 * 5, 7) * 9;
         let (rotated) = rotl(s.s0 * 5, 7);
@@ -61,7 +61,7 @@ namespace Xoshiro128_ss {
         let (s0) = and64(s0_xor);
         let (s1) = rotl(s1_xor_64, 37);
 
-        let new_s: State = State(s0=s0, s1=s1);
+        let new_s: XoshiroState = XoshiroState(s0=s0, s1=s1);
 
         return (new_s, result);
     }
