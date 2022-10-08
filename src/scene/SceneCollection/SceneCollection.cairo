@@ -31,7 +31,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     data: SceneData*,
 ) {
     AERC721.initializer(name, symbol, total_supply, base_uri_len, base_uri);
-    _initializer(data_len - 1, data + (data_len - 1) * SceneData.SIZE);
+    _initializer(data_len - 1, data + data_len * SceneData.SIZE);
 
     return ();
 }
@@ -43,7 +43,7 @@ func _initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
         return ();
     }
 
-    let sceneData = [data];
+    let sceneData = [data - SceneData.SIZE];
 
     logic_addr.write(data_len, sceneData.logic_contract_addr);
 

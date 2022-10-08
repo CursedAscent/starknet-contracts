@@ -37,7 +37,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     data: CardData*,
 ) {
     AERC721.initializer(name, symbol, total_supply, base_uri_len, base_uri);
-    _initializer(data_len - 1, data + (data_len - 1) * CardData.SIZE);
+    _initializer(data_len - 1, data + data_len * CardData.SIZE);
 
     return ();
 }
@@ -49,7 +49,7 @@ func _initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
         return ();
     }
 
-    let cardData = [data];
+    let cardData = [data - CardData.SIZE];
     action.write(data_len, cardData.action);
     class.write(data_len, cardData.class);
     rarity.write(data_len, cardData.rarity);

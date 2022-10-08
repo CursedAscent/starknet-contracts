@@ -49,7 +49,6 @@ namespace EnemyBuilderLib {
             action_list_len=action_list_len,
             action_list=action_list,
             next_action_id=0,
-            previous_action=0,
             );
 
         return (enemy=enemy);

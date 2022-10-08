@@ -50,7 +50,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     data: EnemyData*,
 ) {
     AERC721.initializer(name, symbol, total_supply, base_uri_len, base_uri);
-    _initializer(data_len - 1, data + (data_len - 1) * EnemyData.SIZE);
+    _initializer(data_len - 1, data + (data_len) * EnemyData.SIZE);
 
     return ();
 }
@@ -78,7 +78,7 @@ func _initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
         return ();
     }
 
-    let enemyData = [data];
+    let enemyData = [data - EnemyData.SIZE];
 
     action_list_len.write(data_len, enemyData.action_list_len);
 

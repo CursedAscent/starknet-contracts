@@ -332,44 +332,55 @@ namespace ActionLib {
         }
 
         if (target == AttributeEnum.SELECTED_TARGET) {
-            let (tmp1) = _fill_target_with_selection(0, targets_id, target_id, target_value);
-            targets_id_len = tmp1;
+            let (tmp) = _fill_target_with_selection(0, targets_id, target_id, target_value);
+            targets_id_len = tmp;
 
             tempvar syscall_ptr: felt* = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
         } else {
             if (target == AttributeEnum.RANDOM_TARGET) {
-                let (tmp2) = _fill_target_with_random(0, targets_id, target_value);
-                targets_id_len = tmp2;
+                let (tmp) = _fill_target_with_random(0, targets_id, target_value);
+                targets_id_len = tmp;
 
                 tempvar syscall_ptr: felt* = syscall_ptr;
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar pedersen_ptr = pedersen_ptr;
             } else {
                 if (target == AttributeEnum.ALL_TARGET) {
-                    let (tmp3) = _fill_target_with_all_enemies(
+                    let (tmp) = _fill_target_with_all_enemies(
                         0, targets_id, enemies_nb, target_value
                     );
-                    targets_id_len = tmp3;
+                    targets_id_len = tmp;
 
                     tempvar syscall_ptr: felt* = syscall_ptr;
                     tempvar range_check_ptr = range_check_ptr;
                     tempvar pedersen_ptr = pedersen_ptr;
                 } else {
                     if (target == AttributeEnum.PLAYER_TARGET) {
-                        let (tmp4) = _fill_target_with_player(0, targets_id, target_value);
-                        targets_id_len = tmp4;
+                        let (tmp) = _fill_target_with_player(0, targets_id, target_value);
+                        targets_id_len = tmp;
 
                         tempvar syscall_ptr: felt* = syscall_ptr;
                         tempvar range_check_ptr = range_check_ptr;
                         tempvar pedersen_ptr = pedersen_ptr;
                     } else {
-                        assert 1 = 0;  // Unknown target identifier
+                        if (target == AttributeEnum.SELF_TARGET) {
+                            let (tmp) = _fill_target_with_selection(
+                                0, targets_id, source_id, target_value
+                            );
+                            targets_id_len = tmp;
 
-                        tempvar syscall_ptr: felt* = syscall_ptr;
-                        tempvar range_check_ptr = range_check_ptr;
-                        tempvar pedersen_ptr = pedersen_ptr;
+                            tempvar syscall_ptr: felt* = syscall_ptr;
+                            tempvar range_check_ptr = range_check_ptr;
+                            tempvar pedersen_ptr = pedersen_ptr;
+                        } else {
+                            assert 1 = 0;  // Unknown target identifier
+
+                            tempvar syscall_ptr: felt* = syscall_ptr;
+                            tempvar range_check_ptr = range_check_ptr;
+                            tempvar pedersen_ptr = pedersen_ptr;
+                        }
                     }
                 }
             }

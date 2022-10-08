@@ -7,7 +7,7 @@ from src.scene.SceneState import SceneState
 from src.session.Session import Session
 from src.player.Player import Player
 from src.card.Card import Card
-from src.action.constants import PackedActionHistory
+from src.action.constants import PackedActionHistory, PackedAction
 
 from src.utils.constants import TokenRef
 
@@ -22,23 +22,19 @@ namespace ISceneLogic {
     func initialize_scene() -> (scene_state: SceneState) {
     }
 
-    // @notice Computes the next action from a player
+    // @notice Computes the next action from a player and the scene actions
     // @param scene_state: the scene's context
     // @param seed: seed to initialize PRNG
-    // @param player_len: UNUSED (pointer to single value)
     // @param player: a pointer to the player's instance
     // @param player_action: the action of the card picked by the player (packed)
-    // @param target_ids_len: the length of target_ids array
-    // @param target_ids: array containing all the targetted enemies computed by the game mode
-    // @return scene_state: the scene's context
+    // @param target_id: the id of the target selected by player (if relevant)
+    // @return the computed new scene state, player state, action history & seed
     func next_step(
         scene_state: SceneState,
         seed: felt,
-        player_len: felt,
         player: Player,
-        player_action: felt,
-        target_ids_len: felt,
-        target_ids: felt*,
+        player_action: PackedAction,
+        target_id: felt,
     ) -> (
         scene_state: SceneState,
         player: Player,

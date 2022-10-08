@@ -117,10 +117,11 @@ namespace AttributeEnum {
     const ATTACK_HEALTH_FOR_POISON_COUNT = 'LI';
 
     // Targets (value is number of repetition)
-    const SELECTED_TARGET = 'TS';
+    const SELECTED_TARGET = 'TS';  // for Cards ONLY (player selection)
     const RANDOM_TARGET = 'TR';
     const ALL_TARGET = 'TA';
     const PLAYER_TARGET = 'TP';
+    const SELF_TARGET = 'TM';
 }
 
 namespace ACTION_BIT_POSITION {

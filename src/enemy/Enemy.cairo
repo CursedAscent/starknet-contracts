@@ -20,5 +20,4 @@ struct Enemy {
     action_list_len: felt,
     action_list: ActionList,
     next_action_id: felt,  // index in action_list, -1 if action is hidden
-    previous_action: felt,  // packed_action with updated value for front
 }
