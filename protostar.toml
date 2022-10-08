@@ -33,3 +33,6 @@ cairo-path = ["./lib/cairopen_contracts/src"]
 
 ["protostar.test"]
 cairo-path = ["./lib/cairopen_contracts/src"]
+
+["profile.devnet.protostar.deploy"]
+gateway_url = "http://127.0.0.1:5050/"
