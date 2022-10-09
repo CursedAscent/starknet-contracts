@@ -60,7 +60,7 @@ namespace PlayerBuilderLib {
     func build_player{syscall_ptr: felt*, range_check_ptr}(adventurer_ref: TokenRef) -> (player: Player) {
         assert adventurer_ref.collection_addr = 0;
         assert_not_zero(adventurer_ref.token_id);
-        assert_le_felt(adventurer_ref.token_id, 0x3);
+        assert_le_felt(adventurer_ref.token_id, AdventurerClassEnum.DARK_MAGE);
 
         return _build_tutorial_player(adventurer_ref.token_id);
     }
