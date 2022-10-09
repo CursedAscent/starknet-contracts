@@ -75,7 +75,7 @@ func test_initialize_scene{
         contract_address=contract_address, player=empty_player
     );
 
-    assert scene_state.enemies_len = 1; 
+    assert scene_state.enemies_len = 1;
     assert scene_state.enemies[0].damage_coef = 100;
     assert scene_state.current_event = 0x1;
     assert scene_state.is_finished = 0;
