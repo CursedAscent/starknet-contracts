@@ -70,6 +70,42 @@ namespace Xoshiro128_ss {
         return (new_s, result);
     }
 
+    // takes an array of value that must be different from the generated rnd.
+    // takes a 'max' value to clamp the generated rnd before comparison.
+    // returns (state, rnd) (without max applied)
+    func next_unique{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(state: XoshiroState, values_len: felt, values: felt*, max: felt) -> (
+        state: XoshiroState, rnd: felt
+    ) {
+        alloc_locals;
+        let (state, rnd) = next(state);
+        let (_, rand) = unsigned_div_rem(rnd, max);
+        let is_valid = _check_values(values_len, values, rand);
+
+        if (is_valid == 0) {
+            return next_unique(state, values_len, values, max);
+        } else {
+            return (state, rnd);
+        }
+    }
+
+    func _check_values(values_len: felt, values: felt*, rnd: felt) -> felt {
+        if (values_len == 0) {
+            return 1;
+        }
+
+        let value = [values];
+        if (value == rnd) {
+            return 0;
+        }
+
+        return _check_values(values_len - 1, values + 1, rnd);
+    }
+
     // calculates (x << k) | (x >> (64 - k))
     func rotl{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(x: felt, k: felt) -> (out: felt) {
         alloc_locals;

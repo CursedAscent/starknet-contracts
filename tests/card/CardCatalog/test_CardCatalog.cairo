@@ -12,12 +12,12 @@ func __setup__() {
     local coll1_name = 'hello';
     local coll1_symbol = 'HELL';
     local coll2_name = 'cairo';
-    local coll2_symbol = 'ASS';
+    local coll2_symbol = 'CAI';
 
     %{ context.contract_address = deploy_contract("./src/card/CardCatalog/CardCatalog.cairo").contract_address %}
 
     _deploy_collection(1, 'hello', 'HELL', 3);
-    _deploy_collection(2, 'cairo', 'BAD', 3);
+    _deploy_collection(2, 'cairo', 'CAI', 3);
 
     return ();
 }

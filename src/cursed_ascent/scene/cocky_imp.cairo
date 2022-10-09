@@ -18,6 +18,7 @@ from src.player.Player import Player
 from src.card.Card import Card
 from src.utils.constants import TokenRef
 from src.utils.data_manipulation import insert_data
+from src.utils.xoshiro128.library import Xoshiro128_ss
 from src.action.library import ActionLib
 from src.action.constants import PackedActionHistory, PackedAction
 
@@ -95,7 +96,7 @@ func next_step{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     scene_state: SceneState,
-    seed: felt,
+    seed: Xoshiro128_ss.XoshiroState,
     player: Player,
     player_action: PackedAction,
     target_id: felt,
@@ -104,7 +105,7 @@ func next_step{
     player: Player,
     history_len: felt,
     history: PackedActionHistory*,
-    seed: felt,
+    seed: Xoshiro128_ss.XoshiroState,
 ) {
     alloc_locals;
     let (__fp__, _) = get_fp_and_pc();

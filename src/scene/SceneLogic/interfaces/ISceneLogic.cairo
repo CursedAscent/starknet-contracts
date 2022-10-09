@@ -9,6 +9,7 @@ from src.card.Card import Card
 from src.action.constants import PackedActionHistory, PackedAction
 
 from src.utils.constants import TokenRef
+from src.utils.xoshiro128.library import Xoshiro128_ss
 
 @contract_interface
 namespace ISceneLogic {
@@ -30,7 +31,7 @@ namespace ISceneLogic {
     // @return the computed new scene state, player state, action history & seed
     func next_step(
         scene_state: SceneState,
-        seed: felt,
+        seed: Xoshiro128_ss.XoshiroState,
         player: Player,
         player_action: PackedAction,
         target_id: felt,
@@ -39,7 +40,7 @@ namespace ISceneLogic {
         player: Player,
         history_len: felt,
         history: PackedActionHistory*,
-        seed: felt,
+        seed: Xoshiro128_ss.XoshiroState,
     ) {
     }
 

@@ -4,6 +4,7 @@ from src.player.Player import Player
 from src.card.Card import Card
 from src.scene.SceneState import SceneState
 from src.scene.Scene import Scene
+from src.utils.xoshiro128.library import Xoshiro128_ss
 
 // Session entity used to keep context of a player's game session
 struct Session {
@@ -24,5 +25,5 @@ struct Session {
     rooms: felt,  // Initializable, all rooms computed at gamemode init
     rooms_paths: felt,  // Initializable, all rooms edges computed at gamemode init
     current_state: felt,  // SessionStateEnum
-    seed: felt,  // PRNG seed
+    seed: Xoshiro128_ss.XoshiroState,  // PRNG seed
 }

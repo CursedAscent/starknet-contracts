@@ -1,8 +1,8 @@
 %lang starknet
 
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_block_number
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_lt
+from starkware.cairo.common.math import assert_lt, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
@@ -18,15 +18,16 @@ from src.scene.SceneState import SceneState
 from src.scene.SceneLogic.constants import SceneLogicEvents
 from src.scene.SceneLogic.interfaces.ISceneLogic import ISceneLogic
 from src.utils.constants import TokenRef
+from src.utils.xoshiro128.library import Xoshiro128_ss
 from src.action.constants import PackedActionHistory
 
 // @notice: Start a new game and returns a new GameState. You may want to store this GameState as the root hash on-chain for account
 // @param adventurer_ref: the id of the adventurer token
 // @return the initialized GameState
 @external
-func start_new_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    adventurer_ref: TokenRef
-) -> GameState {
+func start_new_game{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(adventurer_ref: TokenRef) -> GameState {
     alloc_locals;
 
     // Check if session manager already store a game for caller
@@ -52,8 +53,8 @@ func start_new_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let rooms = 0;
     let rooms_paths = 0;
 
-    // todo: PRNG seed
-    let seed = 0;
+    let (init_seed) = get_block_number();
+    let seed: Xoshiro128_ss.XoshiroState = Xoshiro128_ss.init(init_seed);
 
     let session: Session = Session(
         caller_address,
@@ -104,7 +105,9 @@ func pick_room{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 // @param id: the id of the prize if discard_card is false, the id in the deck of the card to discard if discard_card is true
 // @return state: the new GameState
 @external
-func pick_prize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func pick_prize{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
     session: Session,
     card_deck_len: felt,
     card_deck: felt*,
@@ -118,7 +121,7 @@ func pick_prize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 
     let (local new_deck) = alloc();
     tempvar new_deck_len;
-    tempvar seed;
+    tempvar seed: Xoshiro128_ss.XoshiroState;
 
     if (session.scene_state.current_event != SceneLogicEvents.OUTRO) {
         // This is not the classic OUTRO event from SceneLogic, so no rewards
@@ -128,16 +131,13 @@ func pick_prize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
         tempvar range_check_ptr = range_check_ptr;
+        tempvar bitwise_ptr = bitwise_ptr;
     } else {
         // classic OUTRO event, we have a reward
         if (discard_card == 0) {
             // add a card
             let (cards_len, cards) = AGameMode.get_available_cards(session.player.class);
-
-            // todo: generate prizes based on seed
-            let (prizes_len: felt, prizes: felt*, new_seed: felt) = get_prizes(
-                session, card_deck_len, card_deck
-            );
+            let (prizes_len, prizes, new_seed) = get_prizes(session, card_deck_len, card_deck);
             assert_lt(id, prizes_len);
             let selected_card_id = [prizes + id];
 
@@ -147,11 +147,12 @@ func pick_prize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
             memcpy(new_deck + card_deck_len, cards + Card.SIZE * selected_card_id, Card.SIZE);
             new_deck_len = card_deck_len + 1;
 
-            seed = new_seed;
+            assert seed = new_seed;
 
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
         } else {
             // discard a card
             assert_lt(id, card_deck_len);
@@ -164,11 +165,12 @@ func pick_prize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
             );
             new_deck_len = card_deck_len - 1;
 
-            seed = session.seed;
+            assert seed = session.seed;
 
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
             tempvar range_check_ptr = range_check_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
         }
     }
 
@@ -220,7 +222,7 @@ func next_action{
     let scene_logic = scene.logic_contract_addr;
 
     // get player selected card
-    let (hand_len: felt, hand: Card*, seed: felt) = draw_cards(session, card_deck_len, card_deck);
+    let (hand_len, hand, seed) = draw_cards(session, card_deck_len, card_deck);
     let card: Card = [hand + action_id];
 
     // compute new state
@@ -229,7 +231,7 @@ func next_action{
         player: Player,
         history_len: felt,
         history: PackedActionHistory*,
-        seed: felt,
+        seed: Xoshiro128_ss.XoshiroState,
     ) = ISceneLogic.next_step(
         scene_logic, session.scene_state, seed, session.player, card.action, target_id
     );
@@ -264,37 +266,60 @@ func next_action{
 // @param state: the current GameState (session, card_deck_len, card_deck)
 // @return hand_len, hand: the hand array lenght, the array of cards drawn
 @view
-func draw_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    session: Session, card_deck_len: felt, card_deck: felt*
-) -> (hand_len: felt, hand: Card*, seed: felt) {
+func draw_cards{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(session: Session, card_deck_len: felt, card_deck: felt*) -> (
+    hand_len: felt, hand: Card*, seed: Xoshiro128_ss.XoshiroState
+) {
     alloc_locals;
     // todo: apply active_effects.draw_more_cards and active_effects.draw_less_cards
+    let (local hand_ids: felt*) = alloc();
     let (local hand: Card*) = alloc();
     let seed = session.seed;
 
     // generate cards id randomly with seed
+    let seed = _draw_cards(card_deck_len, 3, hand_ids, seed);
 
     // fill hand variable
+    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids]);
+    assert [hand] = card;
+    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids + 1]);
+    assert [hand + Card.SIZE] = card;
+    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids + 2]);
+    assert [hand + Card.SIZE * 2] = card;
 
-    return (0, hand, seed);
+    return (3, hand, seed);
 }
 
 // @notice: Generate prizes for a scene completion
 // @param state: the current GameState (session, card_deck_len, card_deck)
 // @return prizes: the id of the available cards as prizes (id of available_cards)
 @view
-func get_prizes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    session: Session, card_deck_len: felt, card_deck: felt*
-) -> (prizes_len: felt, prizes: felt*, seed: felt) {
+func get_prizes{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(session: Session, card_deck_len: felt, card_deck: felt*) -> (
+    prizes_len: felt, prizes: felt*, seed: Xoshiro128_ss.XoshiroState
+) {
     alloc_locals;
     let (local prizes: felt*) = alloc();
     let seed = session.seed;
 
+    // todo: toggle legendary drop? (boolean in parameter for example)
+
     // generate cards ids randomly with seed
+    let (seed, rnd) = Xoshiro128_ss.next(seed);
+    let (_, id) = unsigned_div_rem(rnd, 10);  // 10 available cards, + 3 to skip starting cards
+    assert [prizes] = id + 3;
 
-    // fill prizes variable
+    let (seed, rnd) = Xoshiro128_ss.next(seed);
+    let (_, id) = unsigned_div_rem(rnd, 10);  // 10 available cards, + 3 to skip starting cards
+    assert [prizes + 1] = id + 3;
 
-    return (0, prizes, seed);
+    let (seed, rnd) = Xoshiro128_ss.next(seed);
+    let (_, id) = unsigned_div_rem(rnd, 10);  // 10 available cards, + 3 to skip starting cards
+    assert [prizes + 2] = id + 3;
+
+    return (3, prizes, seed);
 }
 
 // @notice: get all available cards for a given class
@@ -310,6 +335,24 @@ func get_available_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 //
 // Internals
 //
+
+func _draw_cards{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    card_deck_len: felt, card_ids_len: felt, card_ids: felt*, seed: Xoshiro128_ss.XoshiroState
+) -> Xoshiro128_ss.XoshiroState {
+    if (card_ids_len == 0) {
+        return seed;
+    }
+
+    let (seed, rnd) = Xoshiro128_ss.next_unique(
+        seed, card_ids_len - 1, card_ids + 1, card_deck_len
+    );
+    let (_, id) = unsigned_div_rem(rnd, card_deck_len);
+    [card_ids] = id;
+
+    return _draw_cards(card_deck_len, card_ids_len - 1, card_ids + 1, seed);
+}
 
 // // @notice: Saves a new GameState in storage
 // // @param cur_state: the current saved GameState available in storage (session, card_deck_len, card_deck)

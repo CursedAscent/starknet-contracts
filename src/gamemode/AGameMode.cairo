@@ -73,13 +73,17 @@ namespace AGameMode {
     // Getters
     //
 
-    func get_available_cards_len(class: felt) -> felt {
+    func get_available_cards_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        class: felt
+    ) -> felt {
         let (available_cards_len) = available_cards_len.read(class);
 
         return available_cards_len;
     }
 
-    func get_available_card(class: felt, index: felt) -> Card {
+    func get_available_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        class: felt, index: felt
+    ) -> Card {
         let (card) = available_cards.read(class, index);
 
         return card;

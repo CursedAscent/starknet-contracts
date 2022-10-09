@@ -22,6 +22,7 @@ from src.action.constants import (
     ACTION_HISTORY_BIT_POSITION,
 )
 from src.utils.data_manipulation import unpack_data, insert_data, inplace_insert_data
+from src.utils.xoshiro128.library import Xoshiro128_ss
 from src.utils.math import clamp, mul_then_div
 
 namespace ActionLib {
@@ -186,13 +187,13 @@ namespace ActionLib {
         packed_action: PackedAction,
         source_id: felt,
         target_id: felt,
-        seed: felt,
+        seed: Xoshiro128_ss.XoshiroState,
     ) -> (
         new_scene: SceneState,
         new_player: Player,
         history_len: felt,
         history: PackedActionHistory*,
-        seed: felt,
+        seed: Xoshiro128_ss.XoshiroState,
     ) {
         alloc_locals;
         let (__fp__, _) = get_fp_and_pc();
@@ -211,7 +212,9 @@ namespace ActionLib {
             source1 = tmp;
             source_len = Enemy.SIZE;
         }
-        let (local enemies1, local player1, local history_len1, local history1) = _apply_attribute(
+        let (
+            local enemies1, local player1, local history_len1, local history1, local seed
+        ) = _apply_attribute(
             source_len,
             source1,
             source_id,
@@ -223,6 +226,7 @@ namespace ActionLib {
             action.target1,
             action.target_value1,
             target_id,
+            seed,
         );
         memcpy(history, history1, history_len1);
 
@@ -237,7 +241,9 @@ namespace ActionLib {
             source2 = tmp1;
             source_len = Enemy.SIZE;
         }
-        let (local enemies2, local player2, local history_len2, local history2) = _apply_attribute(
+        let (
+            local enemies2, local player2, local history_len2, local history2, local seed
+        ) = _apply_attribute(
             source_len,
             source2,
             source_id,
@@ -249,6 +255,7 @@ namespace ActionLib {
             action.target2,
             action.target_value2,
             target_id,
+            seed,
         );
         memcpy(history + history_len1, history2, history_len2);
 
@@ -263,7 +270,9 @@ namespace ActionLib {
             source3 = tmp2;
             source_len = Enemy.SIZE;
         }
-        let (local enemies3, local player3, local history_len3, local history3) = _apply_attribute(
+        let (
+            local enemies3, local player3, local history_len3, local history3, local seed
+        ) = _apply_attribute(
             source_len,
             source3,
             source_id,
@@ -275,6 +284,7 @@ namespace ActionLib {
             action.target3,
             action.target_value3,
             target_id,
+            seed,
         );
         memcpy(history + history_len1 + history_len2, history3, history_len3);
 
@@ -320,66 +330,84 @@ namespace ActionLib {
         target: felt,
         target_value: felt,
         target_id: felt,
-    ) -> (enemies: EnemyList, player: Player, history_len: felt, history: PackedActionHistory*) {
+        seed: Xoshiro128_ss.XoshiroState,
+    ) -> (
+        enemies: EnemyList,
+        player: Player,
+        history_len: felt,
+        history: PackedActionHistory*,
+        seed: Xoshiro128_ss.XoshiroState,
+    ) {
         alloc_locals;
         local targets_id_len;
+        local new_seed: Xoshiro128_ss.XoshiroState;
         let (local targets_id: felt*) = alloc();
         let (local history: PackedActionHistory*) = alloc();
 
-        // insane optimization
         if (attribute == '') {
-            return (enemies, player, 0, history);
+            return (enemies, player, 0, history, seed);
         }
 
         if (target == AttributeEnum.SELECTED_TARGET) {
             let (tmp) = _fill_target_with_selection(0, targets_id, target_id, target_value);
             targets_id_len = tmp;
+            assert new_seed = seed;
 
             tempvar syscall_ptr: felt* = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
         } else {
             if (target == AttributeEnum.RANDOM_TARGET) {
-                let (tmp) = _fill_target_with_random(0, targets_id, target_value);
+                let (tmp, _seed) = _fill_target_with_random(0, targets_id, target_value, seed);
                 targets_id_len = tmp;
+                assert new_seed = _seed;
 
                 tempvar syscall_ptr: felt* = syscall_ptr;
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar pedersen_ptr = pedersen_ptr;
+                tempvar bitwise_ptr = bitwise_ptr;
             } else {
                 if (target == AttributeEnum.ALL_TARGET) {
                     let (tmp) = _fill_target_with_all_enemies(
                         0, targets_id, enemies_nb, target_value
                     );
                     targets_id_len = tmp;
+                    assert new_seed = seed;
 
                     tempvar syscall_ptr: felt* = syscall_ptr;
                     tempvar range_check_ptr = range_check_ptr;
                     tempvar pedersen_ptr = pedersen_ptr;
+                    tempvar bitwise_ptr = bitwise_ptr;
                 } else {
                     if (target == AttributeEnum.PLAYER_TARGET) {
                         let (tmp) = _fill_target_with_player(0, targets_id, target_value);
                         targets_id_len = tmp;
+                        assert new_seed = seed;
 
                         tempvar syscall_ptr: felt* = syscall_ptr;
                         tempvar range_check_ptr = range_check_ptr;
                         tempvar pedersen_ptr = pedersen_ptr;
+                        tempvar bitwise_ptr = bitwise_ptr;
                     } else {
                         if (target == AttributeEnum.SELF_TARGET) {
                             let (tmp) = _fill_target_with_selection(
                                 0, targets_id, source_id, target_value
                             );
+                            assert new_seed = seed;
                             targets_id_len = tmp;
 
                             tempvar syscall_ptr: felt* = syscall_ptr;
                             tempvar range_check_ptr = range_check_ptr;
                             tempvar pedersen_ptr = pedersen_ptr;
+                            tempvar bitwise_ptr = bitwise_ptr;
                         } else {
                             assert 1 = 0;  // Unknown target identifier
 
                             tempvar syscall_ptr: felt* = syscall_ptr;
                             tempvar range_check_ptr = range_check_ptr;
                             tempvar pedersen_ptr = pedersen_ptr;
+                            tempvar bitwise_ptr = bitwise_ptr;
                         }
                     }
                 }
@@ -397,9 +425,16 @@ namespace ActionLib {
             value,
             0,
             history,
+            new_seed,
         );
 
-        return (enemies=result[0], player=result[1], history_len=targets_id_len, history=history);
+        return (
+            enemies=result[0],
+            player=result[1],
+            history_len=targets_id_len,
+            history=history,
+            seed=result[2],
+        );
     }
 
     // @notice: Apply one action's attribute to given targets.
@@ -430,12 +465,13 @@ namespace ActionLib {
         value: felt,
         history_len: felt,
         history: PackedActionHistory*,
-    ) -> (enemies: EnemyList, player: Player) {
+        seed: Xoshiro128_ss.XoshiroState,
+    ) -> (enemies: EnemyList, player: Player, seed: Xoshiro128_ss.XoshiroState) {
         alloc_locals;
         let (__fp__, _) = get_fp_and_pc();
 
         if (targets_id_len == 0) {
-            return (_enemies, player);
+            return (_enemies, player, seed);
         }
 
         local target_id = [targets_id];
@@ -448,6 +484,7 @@ namespace ActionLib {
         local new_s: Entity*;
         local new_t_len;
         local new_t: Entity*;
+        local new_seed: Xoshiro128_ss.XoshiroState;
 
         if (target_id == -1) {
             let tmp1 = _apply_attribute_to_target(
@@ -459,12 +496,14 @@ namespace ActionLib {
                 target_id,
                 attribute,
                 value,
+                seed,
             );
             new_s_len = tmp1[0];
             new_s = tmp1[1];
             new_t_len = tmp1[2];
             new_t = tmp1[3];
             [history] = tmp1[4];
+            assert new_seed = tmp1[5];
 
             tempvar syscall_ptr = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -480,12 +519,14 @@ namespace ActionLib {
                 target_id,
                 attribute,
                 value,
+                seed,
             );
             new_s_len = tmp2[0];
             new_s = tmp2[1];
             new_t_len = tmp2[2];
             new_t = tmp2[3];
             [history] = tmp2[4];
+            assert new_seed = tmp2[5];
 
             tempvar syscall_ptr = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
@@ -566,6 +607,7 @@ namespace ActionLib {
             value,
             history_len + 1,
             history + 1,
+            new_seed,
         );
         return (result);
     }
@@ -592,12 +634,14 @@ namespace ActionLib {
         target_id: felt,
         attribute: felt,
         value: felt,
+        seed: Xoshiro128_ss.XoshiroState,
     ) -> (
         new_source_len: felt,
         new_source: Entity*,
         new_target_len: felt,
         new_target: Entity*,
         history: PackedActionHistory,
+        seed: Xoshiro128_ss.XoshiroState,
     ) {
         alloc_locals;
         let (__fp__, _) = get_fp_and_pc();
@@ -618,7 +662,7 @@ namespace ActionLib {
             memcpy(new_target, target, target_len);
             memcpy(new_source, source, source_len);
             let (tmp_pah) = pack_action_history(dummy_ah, dummy_ah, dummy_ah, dummy_ah);
-            return (source_len, new_source, target_len, new_target, tmp_pah);
+            return (source_len, new_source, target_len, new_target, tmp_pah, seed);
         }
         if (attribute == AttributeEnum.DIRECT_HIT) {
             // no source change
@@ -644,12 +688,7 @@ namespace ActionLib {
             [new_target_state] = new_hp;
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
-            // ah1 = ActionHistory(attribute, damage, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = damage;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
-
+            assert ah1 = ActionHistory(attribute, damage, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -668,11 +707,7 @@ namespace ActionLib {
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
 
-            // ah1 = ActionHistory(attribute, damage, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = damage;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, damage, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -689,11 +724,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -710,11 +741,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -731,11 +758,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -753,11 +776,7 @@ namespace ActionLib {
             [new_target_state] = t.health_points;
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
-            // ah1 = ActionHistory(attribute, add_pp, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = add_pp;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, add_pp, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -775,11 +794,7 @@ namespace ActionLib {
             [new_target_state] = new_hp;
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -797,11 +812,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -820,11 +831,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -841,11 +848,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -862,11 +865,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -883,11 +882,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -904,11 +899,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -926,11 +917,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -947,11 +934,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -968,11 +951,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -989,11 +968,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1010,11 +985,7 @@ namespace ActionLib {
             // [new_target_state] = t.health_points;
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1047,11 +1018,7 @@ namespace ActionLib {
             [new_target_state] = new_hp;
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
-            // ah1 = ActionHistory(attribute, target_bleed_stack, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = target_bleed_stack;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, target_bleed_stack, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1066,11 +1033,7 @@ namespace ActionLib {
             [new_source_state + 1] = new_pp;
             [new_source_state + 2] = s.active_effects;
 
-            // ah2 = ActionHistory(AttributeEnum.PROTECTION_POINT, remaining, source_id, target_id);
-            ah2.attribute = AttributeEnum.PROTECTION_POINT;
-            ah2.computed_value = remaining;
-            ah2.source_id = source_id;
-            ah2.target_id = target_id;
+            assert ah2 = ActionHistory(AttributeEnum.PROTECTION_POINT, remaining, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp dh;
         } else {
@@ -1086,11 +1049,7 @@ namespace ActionLib {
             [new_source_state + 1] = s.protection_points;
             [new_source_state + 2] = s.active_effects;
 
-            // ah2 = ActionHistory(AttributeEnum.HEALTH_POINT, bonus_hp, source_id, target_id);
-            ah2.attribute = AttributeEnum.HEALTH_POINT;
-            ah2.computed_value = bonus_hp;
-            ah2.source_id = source_id;
-            ah2.target_id = target_id;
+            assert ah2 = ActionHistory(AttributeEnum.HEALTH_POINT, bonus_hp, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp dh;
         } else {
@@ -1124,11 +1083,7 @@ namespace ActionLib {
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
 
-            // ah1 = ActionHistory(AttributeEnum.DIRECT_HIT, damage, source_id, target_id);
-            ah1.attribute = AttributeEnum.DIRECT_HIT;
-            ah1.computed_value = damage;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(AttributeEnum.DIRECT_HIT, damage, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1150,16 +1105,8 @@ namespace ActionLib {
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
 
-            // ah1 = ActionHistory(AttributeEnum.HEALTH_POINT, value, source_id, target_id);
-            ah1.attribute = AttributeEnum.HEALTH_POINT;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
-            // ah2 = ActionHistory(AttributeEnum.PROTECTION_POINT, add_pp, source_id, target_id);
-            ah2.attribute = AttributeEnum.PROTECTION_POINT;
-            ah2.computed_value = add_pp;
-            ah2.source_id = source_id;
-            ah2.target_id = target_id;
+            assert ah1 = ActionHistory(AttributeEnum.HEALTH_POINT, value, source_id, target_id);
+            assert ah2 = ActionHistory(AttributeEnum.PROTECTION_POINT, add_pp, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
 
@@ -1180,11 +1127,7 @@ namespace ActionLib {
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
 
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1217,11 +1160,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
 
-            // ah1 = ActionHistory(attribute, value, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = value;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, value, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1252,11 +1191,7 @@ namespace ActionLib {
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
 
-            // ah1 = ActionHistory(attribute, damage, source_id, target_id);
-            ah1.attribute = attribute;
-            ah1.computed_value = damage;
-            ah1.source_id = source_id;
-            ah1.target_id = target_id;
+            assert ah1 = ActionHistory(attribute, damage, source_id, target_id);
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1280,6 +1215,7 @@ namespace ActionLib {
             new_target_len=target_len,
             new_target=new_t,
             history=pah,
+            seed=seed,
         );
     }
 
@@ -1298,16 +1234,21 @@ namespace ActionLib {
         );
     }
 
-    func _fill_target_with_random{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        targets_id_len: felt, targets_id: felt*, value: felt
-    ) -> (_targets_id_len: felt) {
+    func _fill_target_with_random{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(targets_id_len: felt, targets_id: felt*, value: felt, seed: Xoshiro128_ss.XoshiroState) -> (
+        _targets_id_len: felt, seed: Xoshiro128_ss.XoshiroState
+    ) {
         if (value == 0) {
-            return (_targets_id_len=targets_id_len);
+            return (_targets_id_len=targets_id_len, seed=seed);
         }
 
-        tempvar rand = 0;  // todo: random
-        [targets_id] = rand;
-        return _fill_target_with_random(targets_id_len + 1, targets_id + 1, value - 1);
+        let (state: Xoshiro128_ss.XoshiroState, rnd: felt) = Xoshiro128_ss.next(seed);
+        [targets_id] = rnd;
+        return _fill_target_with_random(targets_id_len + 1, targets_id + 1, value - 1, state);
     }
 
     func _fill_target_with_all_enemies{
