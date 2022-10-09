@@ -45,28 +45,22 @@ namespace AGameMode {
     //
     // Constructor
     //
+    
+    // Assumes that catalogs are already populated with collections for game_mode_id
     func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         game_mode_id: felt,
         card_catalog_addr: felt,
-        card_collections_len: felt,
-        card_collections: felt*,
-        scene_collections_len: felt,
-        scene_collections: felt*,
         scene_catalog_addr: felt,
     ) {
         // cards
         card_catalog.write(card_catalog_addr);
-        _add_collections_to_catalog(
-            card_catalog_addr, game_mode_id, card_collections_len, card_collections
-        );
         _retrieve_available_cards(card_catalog_addr, game_mode_id);
 
         // scenes
         scene_catalog.write(scene_catalog_addr);
-        _add_collections_to_catalog(
-            scene_catalog_addr, game_mode_id, scene_collections_len, scene_collections
-        );
         _retrieve_scene_list(scene_catalog_addr, game_mode_id);
+
+        return ();
     }
 
     //
@@ -170,7 +164,9 @@ namespace AGameMode {
             catalog_addr, game_mode_id
         );
 
-        _store_cards(token_list_len, token_list + (token_list_len - 1) * TokenRef.SIZE);
+        _store_cards(token_list_len - 1, token_list + (token_list_len) * TokenRef.SIZE);
+
+        return ();
     }
 
     func _retrieve_scene_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -181,19 +177,19 @@ namespace AGameMode {
         );
 
         scene_list_len.write(token_list_len);
-        _store_scenes(token_list_len, token_list + (token_list_len - 1) * TokenRef.SIZE);
+        _store_scenes(token_list_len - 1, token_list + (token_list_len) * TokenRef.SIZE);
+
+        return ();
     }
 
     func _store_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         token_list_len: felt, token_list: TokenRef*
     ) {
-        if (token_list_len == 0) {
-            return ();
-        }
+        alloc_locals;
 
-        let card: Card = CardBuilderLib.build_partial_card([token_list]);
-        let card: Card = Card(
-            card.card_ref, token_list_len, card.action, card.class, card.rarity, card.drawable
+        let card_tmp: Card = CardBuilderLib.build_partial_card([token_list - TokenRef.SIZE]);
+        local card: Card = Card(
+            card_tmp.card_ref, token_list_len, card_tmp.action, card_tmp.class, card_tmp.rarity, card_tmp.drawable
         );
 
         // NB: unsafe assertion on card tokens layout in CardCollection
@@ -205,21 +201,27 @@ namespace AGameMode {
         let (card_nb) = available_cards_len.read(card.class);
         available_cards_len.write(card.class, card_nb + 1);
 
+        if (token_list_len == 0) {
+            return ();
+        }
+
         _store_cards(token_list_len - 1, token_list - TokenRef.SIZE);
+
+        return ();
     }
 
     func _store_scenes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         token_list_len: felt, token_list: TokenRef*
     ) {
+        let scene: Scene = SceneBuilderLib.build_partial_scene([token_list - TokenRef.SIZE]);
+
+        scene_list.write(token_list_len, scene);
+
         if (token_list_len == 0) {
             return ();
         }
 
-        let scene: Scene = SceneBuilderLib.build_partial_scene([token_list]);
-
-        scene_list.write(token_list_len - 1, scene);
-
-        _store_scenes(token_list_len - 1, token_list - TokenRef.SIZE);
+        return _store_scenes(token_list_len - 1, token_list - TokenRef.SIZE);
     }
 
     func _get_available_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

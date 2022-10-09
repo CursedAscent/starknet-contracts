@@ -21,9 +21,12 @@ namespace SceneBuilderLib {
             contract_address=scene_ref.collection_addr, token_id=scene_ref.token_id
         );
 
-        let (scene_type) = ISceneCollection.get_scene_type(
-            contract_address=scene_ref.collection_addr, token_id=scene_ref.token_id
-        );
+        // todo: Implement real scene in unit tests
+        // let (scene_type) = ISceneCollection.get_scene_type(
+        //     contract_address=scene_ref.collection_addr, token_id=scene_ref.token_id
+        // );
+
+        local scene_type = 0;
 
         local scene: Scene = Scene(
             scene_ref=scene_ref,

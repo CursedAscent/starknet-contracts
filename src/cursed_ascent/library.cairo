@@ -14,24 +14,6 @@ namespace cursed_ascentLibrary {
     // Constructors
     //
 
-    func build_new_player(adventurer_class: felt) -> Player {
-        if (adventurer_class == AdventurerClassEnum.WARRIOR) {
-            return _build_warrior();
-        }
-        if (adventurer_class == AdventurerClassEnum.HUNTER) {
-            return _build_hunter();
-        }
-        if (adventurer_class == AdventurerClassEnum.LIGHT_MAGE) {
-            return _build_light_mage();
-        }
-        if (adventurer_class == AdventurerClassEnum.DARK_MAGE) {
-            return _build_dark_mage();
-        }
-
-        assert 0 = 1;  // should not come here
-        return _empty_player();
-    }
-
     func create_deck{syscall_ptr: felt*, range_check_ptr}(
         adventurer_class: felt, cards_len: felt, cards: Card*
     ) -> (card_deck_len: felt, card_deck: Card*) {
@@ -74,45 +56,6 @@ namespace cursed_ascentLibrary {
             damage, pp, armor, max_hp, max_hp, 0, 0, player_ref, AdventurerClassEnum.WARRIOR, 0
         );
         return warrior;
-    }
-
-    func _build_hunter() -> Player {
-        let damage = 100;
-        let pp = 100;
-        let armor = 100;
-        let max_hp = 60;
-        let player_ref = TokenRef(0, 0);
-
-        let hunter = Player(
-            damage, pp, armor, max_hp, max_hp, 0, 0, player_ref, AdventurerClassEnum.HUNTER, 0
-        );
-        return hunter;
-    }
-
-    func _build_light_mage() -> Player {
-        let damage = 100;
-        let pp = 100;
-        let armor = 100;
-        let max_hp = 60;
-        let player_ref = TokenRef(0, 0);
-
-        let light_mage = Player(
-            damage, pp, armor, max_hp, max_hp, 0, 0, player_ref, AdventurerClassEnum.LIGHT_MAGE, 0
-        );
-        return light_mage;
-    }
-
-    func _build_dark_mage() -> Player {
-        let damage = 100;
-        let pp = 100;
-        let armor = 100;
-        let max_hp = 60;
-        let player_ref = TokenRef(0, 0);
-
-        let dark_mage = Player(
-            damage, pp, armor, max_hp, max_hp, 0, 0, player_ref, AdventurerClassEnum.DARK_MAGE, 0
-        );
-        return dark_mage;
     }
 
     func _create_warrior_deck{syscall_ptr: felt*, range_check_ptr}(

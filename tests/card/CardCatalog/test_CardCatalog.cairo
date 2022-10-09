@@ -1,6 +1,6 @@
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_contract_address
 
 from src.catalog.interfaces.ICatalog import ICatalog
@@ -171,9 +171,9 @@ func _deploy_collection(contract_idx: felt, name: felt, symbol: felt, total_supp
             for c in base_uri: call_data.append(ord(c))
 
             data = [
-                (0x1, 0x2, 0x3),
-                (0x4, 0x5, 0x6),
-                (0x7, 0x8, 0x9)
+                (0x1, 0x1, 0x3),
+                (0x1, 0x1, 0x6),
+                (0x1, 0x1, 0x9)
             ]
 
             call_data.append(len(data))

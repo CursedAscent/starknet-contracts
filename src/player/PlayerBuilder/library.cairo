@@ -16,28 +16,28 @@ namespace PlayerBuilderLib {
         alloc_locals;
         let (local warrior: AdventurerState) = AdventurerLib.birth(0, 0, 'Warrior', 0, 0);
 
-        return (player=Player(100, 120, 100, warrior.Health, warrior.Health, 0, 0, TokenRef(0, AdventurerClassEnum.WARRIOR), 0, 0));
+        return (player=Player(100, 100, 100, warrior.Health, warrior.Health, 0, 0, TokenRef(0, AdventurerClassEnum.WARRIOR), AdventurerClassEnum.WARRIOR, 0));
     }
 
     func _build_tutorial_hunter{syscall_ptr: felt*, range_check_ptr}() -> (player: Player) {
         alloc_locals;
         let (local warrior: AdventurerState) = AdventurerLib.birth(0, 0, 'Warrior', 0, 0);
 
-        return (player=Player(0, 0, 0, 0, 0, 0, 0, TokenRef(0, AdventurerClassEnum.HUNTER), 0, 0));
+        return (player=Player(100, 100, 100, warrior.Health, warrior.Health, 0, 0, TokenRef(0, AdventurerClassEnum.HUNTER), AdventurerClassEnum.HUNTER, 0));
     }
 
     func _build_tutorial_lightmage{syscall_ptr: felt*, range_check_ptr}() -> (player: Player) {
         alloc_locals;
         let (local warrior: AdventurerState) = AdventurerLib.birth(0, 0, 'Warrior', 0, 0);
 
-        return (player=Player(0, 0, 0, 0, 0, 0, 0, TokenRef(0, AdventurerClassEnum.LIGHT_MAGE), 0, 0));
+        return (player=Player(100, 100, 100, warrior.Health, warrior.Health, 0, 0, TokenRef(0, AdventurerClassEnum.LIGHT_MAGE), AdventurerClassEnum.LIGHT_MAGE, 0));
     }
 
     func _build_tutorial_darkmage{syscall_ptr: felt*, range_check_ptr}() -> (player: Player) {
         alloc_locals;
         let (local warrior: AdventurerState) = AdventurerLib.birth(0, 0, 'Warrior', 0, 0);
 
-        return (player=Player(0, 0, 0, 0, 0, 0, 0, TokenRef(0, AdventurerClassEnum.DARK_MAGE), 0, 0));
+        return (player=Player(100, 100, 100, warrior.Health, warrior.Health, 0, 0, TokenRef(0, AdventurerClassEnum.DARK_MAGE), AdventurerClassEnum.DARK_MAGE, 0));
     }
 
     func _build_tutorial_player{syscall_ptr: felt*, range_check_ptr}(adventurer_id: felt) -> (player: Player) {

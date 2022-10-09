@@ -1,45 +1,11 @@
 %lang starknet
 
 from src.card.CardCollection.interfaces.ICardCollection import ICardCollection
+from tests.card.CardCollection.utils import setup_card_collection
 
 //
 // Setup
 //
-
-@external
-func setup_card_collection() {
-    alloc_locals;
-    local name = 'hello';
-    local symbol = 'HELL';
-
-    %{
-        call_data = []
-
-        call_data.append(ids.name)
-        call_data.append(ids.symbol)
-        call_data.append(0x84)
-
-        base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm"
-
-        call_data.append(len(base_uri))
-        for c in base_uri: call_data.append(ord(c))
-
-        data = [
-            (0x1, 0x2, 0x3),
-            (0x4, 0x5, 0x6),
-            (0x7, 0x8, 0x9)
-        ]
-
-        call_data.append(len(data))
-        for d in data:
-            for e in d:
-                call_data.append(e)
-
-        context.card_collection_address = deploy_contract("./src/card/CardCollection/CardCollection.cairo", call_data).contract_address
-    %}
-
-    return ();
-}
 
 @external
 func __setup__() {
@@ -115,9 +81,9 @@ func test_get_class{syscall_ptr: felt*, range_check_ptr}() {
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
-    let (class) = ICardCollection.get_class(contract_address=contract_address, token_id=1);
+    let (class) = ICardCollection.get_class(contract_address=contract_address, token_id=14);
 
-    assert class = 0x5;
+    assert class = 0x2;
 
     return ();
 }
@@ -129,9 +95,9 @@ func test_get_rarity{syscall_ptr: felt*, range_check_ptr}() {
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
-    let (rarity) = ICardCollection.get_rarity(contract_address=contract_address, token_id=2);
+    let (rarity) = ICardCollection.get_rarity(contract_address=contract_address, token_id=27);
 
-    assert rarity = 0x9;
+    assert rarity = 0x1;
 
     return ();
 }

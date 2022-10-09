@@ -12,6 +12,7 @@ from src.gamemode.constants import GameState
 from src.session.Session import Session
 from src.session.constants import SessionStateEnum
 from src.player.Player import Player
+from src.player.PlayerBuilder.library import PlayerBuilderLib
 from src.card.Card import Card
 from src.scene.Scene import Scene
 from src.scene.SceneState import SceneState
@@ -20,6 +21,20 @@ from src.scene.SceneLogic.interfaces.ISceneLogic import ISceneLogic
 from src.utils.constants import TokenRef
 from src.utils.xoshiro128.library import Xoshiro128_ss
 from src.action.constants import PackedActionHistory
+
+const GAME_ID = 'CURSED ASCENT';
+
+//
+// Constructor
+//
+@constructor
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    card_catalog_addr: felt, scene_catalog_addr: felt
+){
+    AGameMode.initializer(GAME_ID, card_catalog_addr, scene_catalog_addr);
+
+    return ();
+}
 
 // @notice: Start a new game and returns a new GameState. You may want to store this GameState as the root hash on-chain for account
 // @param adventurer_ref: the id of the adventurer token
@@ -35,9 +50,7 @@ func start_new_game{
     // todo ^
 
     // build a new Player
-    // adventurer_ref.token_id is used as a AdventurerClassEnum
-    // todo: should be from the PlayerBuilder library
-    let player: Player = cursed_ascentLibrary.build_new_player(adventurer_ref.token_id);
+    let player: Player = PlayerBuilderLib.build_player(adventurer_ref);
 
     // generate initial card deck
     let (cards_len, cards) = AGameMode.get_available_cards(player.class);
