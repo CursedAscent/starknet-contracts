@@ -65,6 +65,7 @@ func start_new_game{
     // todo: rooms library
     let rooms = 0;
     let rooms_paths = 0;
+    let floor = 0;
 
     let (init_seed) = get_block_number();
     let seed: Xoshiro128_ss.XoshiroState = Xoshiro128_ss.init(init_seed);
@@ -74,6 +75,7 @@ func start_new_game{
         player,
         scene_state,
         current_scene_id,
+        floor,
         rooms,
         rooms_paths,
         SessionStateEnum.GAME_INITIALIZED,
@@ -193,6 +195,7 @@ func pick_prize{
         session.player,
         session.scene_state,
         session.current_scene_id,
+        session.floor,
         session.rooms,
         session.rooms_paths,
         SessionStateEnum.GAME_IN_MAP,
@@ -262,6 +265,7 @@ func next_action{
         player,
         scene_state,
         session.current_scene_id,
+        session.floor,
         session.rooms,
         session.rooms_paths,
         new_session_state,
