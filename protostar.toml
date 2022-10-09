@@ -32,10 +32,10 @@ CockyImp = [
 ]
 
 ["protostar.build"]
-cairo-path = ["./lib/cairopen_contracts/src"]
+cairo-path = ["./lib/cairopen_contracts/src", "./lib/realms-contracts/contracts/loot"]
 
 ["protostar.test"]
-cairo-path = ["./lib/cairopen_contracts/src"]
+cairo-path = ["./lib/cairopen_contracts/src", "./lib/realms-contracts/contracts/loot"]
 
 ["profile.devnet.protostar.deploy"]
 gateway_url = "http://127.0.0.1:5050/"
