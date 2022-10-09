@@ -9,7 +9,7 @@ from src.scene.Scene import Scene
 struct Session {
     account_addr: felt,
     player: Player,
-    cards_available_len: felt,
+    // cards_available_len: felt, immutable, comes with cards_available
     // cards_available: Card*,  // Immutable, all card available for gamemode
     // player_deck_len: felt, // Provided as part of Session tuple (Session, felt, Card*)
     // player_deck: Card*, // Provided as part of Session tuple (Session, felt, Card*)
@@ -17,7 +17,7 @@ struct Session {
     // prizes: Card*, // Generated on the fly based on seed
     // hand_len: felt,
     // hand: Card*, // Generated on the fly based on seed
-    scene_session: SceneState,
+    scene_state: SceneState,
     // scenes_len: felt,
     // scenes: Scene*, // Immutable, scenes[room_1] == Scene.logic_contract_addr
     current_scene_id: felt,

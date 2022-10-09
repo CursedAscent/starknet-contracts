@@ -21,7 +21,10 @@ SceneCollection = [
     "src/scene/SceneCollection/SceneCollection.cairo",
 ]
 SceneCatalog = [
-    "src/scene/SceneCatalog/SceneCatalog.cairo",
+   "src/scene/SceneCatalog/SceneCatalog.cairo",
+]
+cursed_ascent = [
+    "src/cursed_ascent/cursed_ascent.cairo",
 ]
 # Scene Logic contracts
 CockyImp = [

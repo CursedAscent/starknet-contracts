@@ -8,8 +8,9 @@ from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_fp_and_pc
 from src.scene.SceneLogic.ASceneLogic import ASceneLogic
 from src.scene.constants import SceneTypeEnum
-from src.session.Session import Session
 from src.scene.SceneState import SceneState, EnemyList
+from src.scene.SceneLogic.constants import SceneLogicEvents
+from src.session.Session import Session
 from src.enemy.Enemy import Enemy
 from src.enemy.EnemyCollection.interfaces.IEnemyCollection import IEnemyCollection
 from src.enemy.EnemyBuilder.library import EnemyBuilderLib
@@ -27,10 +28,10 @@ from src.action.constants import PackedActionHistory, PackedAction
 const IMP_INDEX = 0;
 
 namespace EVENT_LIST {
-    const IN_COMBAT = 0;
-    const INTRO = 1;
-    const OUTRO = 2;
-    const PLAYER_DEAD = 3;
+    const NO_EVENT = SceneLogicEvents.NO_EVENT;
+    const INTRO = SceneLogicEvents.INTRO;
+    const OUTRO = SceneLogicEvents.OUTRO;
+    const PLAYER_DEAD = SceneLogicEvents.PLAYER_DEAD;
 }
 
 //
@@ -155,7 +156,7 @@ func next_step{
     // set imp next action
     let (_, next_action_id) = unsigned_div_rem(imp.next_action_id + 1, 3);  // modulo 3 (it's a loop over the 3 available actions)
     let imp = _update_enemy_next_action(next_action_id, imp);
-    let scene_state = _update_scene_state_enemy_list(imp, scene_state);
+    let scene_state = _update_scene_state_enemy_list(imp, scene_state, EVENT_LIST.NO_EVENT);
 
     return (scene_state, player, history_len, history, seed);
 }
@@ -217,11 +218,10 @@ func _build_imp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 
 // as much enemy parameters as there are in the scene
 func _update_scene_state_enemy_list{syscall_ptr: felt*, range_check_ptr}(
-    imp: Enemy, scene_state: SceneState
+    imp: Enemy, scene_state: SceneState, new_event: felt
 ) -> SceneState {
     alloc_locals;
     let (__fp__, _) = get_fp_and_pc();
-    local empty_enemy: Enemy;
 
     // update scene_state.enemy_list with imp at index 0
     let (enemy_list: EnemyList*) = insert_data(
@@ -232,7 +232,7 @@ func _update_scene_state_enemy_list{syscall_ptr: felt*, range_check_ptr}(
     let result: SceneState = SceneState(
         1,
         (list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7]),
-        scene_state.current_event,
+        new_event,
         scene_state.is_finished,
     );
 
