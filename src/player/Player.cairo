@@ -14,7 +14,7 @@ struct Player {
     active_effects: felt,
 
     // Player-specific data:
-    player_ref: TokenRef,
+    adventurer_ref: TokenRef,
     class: felt,  // AdventurerClassEnum
     luck: felt,  // NOT IMPLEMENTED
 }
