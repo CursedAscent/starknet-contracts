@@ -4,6 +4,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 
 from src.catalog.interfaces.ICatalog import ICatalog
+from src.gamemode.constants import GameState
+from src.session.Session import Session
 from src.card.Card import Card
 from src.card.CardBuilder.library import CardBuilderLib
 from src.scene.Scene import Scene
@@ -12,6 +14,7 @@ from src.scene.SceneBuilder.library import SceneBuilderLib
 from src.scene.constants import SceneTypeEnum
 from src.enemy.Enemy import Enemy
 from src.utils.constants import TokenRef
+from src.SessionManager.library import SessionManagerLib
 
 //
 // Storage
@@ -39,6 +42,10 @@ func scene_list_len() -> (scene_list_len: felt) {
 
 @storage_var
 func scene_list(index: felt) -> (scene: Scene) {
+}
+
+@storage_var
+func saved_game_state(player_addr: felt) -> (game_state_hash: felt) {
 }
 
 namespace AGameMode {
@@ -108,6 +115,52 @@ namespace AGameMode {
         return scene;
     }
 
+    func get_saved_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        player_addr: felt
+    ) -> felt {
+        let (game_state_hash) = saved_game_state.read(player_addr);
+
+        return game_state_hash;
+    }
+
+    //
+    // Setters
+    //
+
+    func save_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        session: Session, card_deck_len: felt, card_deck: Card*
+    ) -> felt {
+        let hashed_game_state = SessionManagerLib.hash_state(session, card_deck_len, card_deck);
+
+        saved_game_state.write(session.account_addr, hashed_game_state);
+
+        return hashed_game_state;
+    }
+
+    func erase_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        player_addr: felt
+    ) {
+        saved_game_state.write(player_addr, 0);
+
+        return ();
+    }
+
+    //
+    // Logic
+    //
+    func check_stored_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        session: Session, card_deck_len: felt, card_deck: Card*
+    ) -> felt {
+        let hashed_game_state = SessionManagerLib.hash_state(session, card_deck_len, card_deck);
+
+        let (game_state_hash) = saved_game_state.read(session.account_addr);
+        if (game_state_hash == hashed_game_state) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     //
     // Data
     //
@@ -140,6 +193,12 @@ namespace AGameMode {
     //
     // Internals
     //
+
+    func _set_saved_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        player_addr: felt, game_state_hash: felt
+    ) {
+        saved_game_state.write(player_addr, game_state_hash);
+    }
 
     func _add_collections_to_catalog{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr

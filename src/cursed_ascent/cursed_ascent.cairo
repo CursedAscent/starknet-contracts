@@ -50,7 +50,8 @@ func start_new_game{
 
     // Check if session manager already stores a game for caller
     let (caller_address) = get_caller_address();
-    // todo ^
+    let current_game_state = AGameMode.get_saved_game_state(caller_address);
+    assert current_game_state = 0;
 
     // build a new Player
     let player: Player = PlayerBuilderLib.build_player(adventurer_ref);
@@ -84,7 +85,8 @@ func start_new_game{
         seed,
     );
 
-    // todo: save with SessionManager Library
+    // save with SessionManager Library
+    AGameMode.save_game_state(session, card_deck_len, card_deck);
 
     return (session, card_deck_len, card_deck);
 }
@@ -92,7 +94,9 @@ func start_new_game{
 // @notice: Stop on-going game and cleans any existing GameState storage for account
 @external
 func stop_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    // todo: SessionManager Library
+    let (caller_address) = get_caller_address();
+
+    AGameMode.erase_game_state(caller_address);
     return ();
 }
 
@@ -105,6 +109,12 @@ func pick_room{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(session: Session, card_deck_len: felt, card_deck: Card*, room_id: felt) -> GameState {
     alloc_locals;
+
+    // check if received GameState is valid
+    let (caller_address) = get_caller_address();
+    assert caller_address = session.account_addr;
+    let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
+    assert is_game_state_valid = 1;
 
     // check if player is not in room
     let session_state = session.current_state;
@@ -139,6 +149,7 @@ func pick_room{
     );
 
     // save with SessionManager Library
+    AGameMode.save_game_state(session, card_deck_len, card_deck);
 
     return (session, card_deck_len, card_deck);
 }
@@ -161,6 +172,14 @@ func pick_prize{
     id: felt,
 ) -> GameState {
     alloc_locals;
+
+    // check if received GameState is valid
+    let (caller_address) = get_caller_address();
+    assert caller_address = session.account_addr;
+    let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
+    assert is_game_state_valid = 1;
+
+    // check if we are in a finished scene
     assert session.current_state = SessionStateEnum.GAME_IN_ROOM;
     assert session.scene_state.is_finished = 1;
 
@@ -232,6 +251,14 @@ func pick_prize{
         seed,
     );
 
+    tempvar syscall_ptr = syscall_ptr;
+    tempvar pedersen_ptr = pedersen_ptr;
+    tempvar range_check_ptr = range_check_ptr;
+    tempvar bitwise_ptr = bitwise_ptr;
+
+    // save with SessionManager Library
+    AGameMode.save_game_state(session, new_deck_len, new_deck);
+
     return (session, new_deck_len, new_deck);
 }
 
@@ -259,7 +286,16 @@ func next_action{
     history: PackedActionHistory*,
 ) {
     alloc_locals;
+
+    // check if received GameState is valid
+    let (caller_address) = get_caller_address();
+    assert caller_address = session.account_addr;
+    let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
+    assert is_game_state_valid = 1;
+
+    // check if we are in an ongoing scene
     assert session.current_state = SessionStateEnum.GAME_IN_ROOM;
+    assert session.scene_state.is_finished = 0;
     // todo: if played card is a legendary, turn the drawable boolean to 0
     // turn it back on after the fight
 
@@ -302,12 +338,25 @@ func next_action{
         seed,
     );
 
+    // save with SessionManager Library
+    AGameMode.save_game_state(session, card_deck_len, card_deck);
+
     return (session, card_deck_len, card_deck, history_len, history);
 }
 
 //
 // Geters
 //
+
+@view
+func get_saved_game_state{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    player_addr: felt
+) -> (game_state_hash: felt) {
+    let (caller_address) = get_caller_address();
+    let game_state_hash = AGameMode.get_saved_game_state(player_addr);
+
+    return (game_state_hash=game_state_hash);
+}
 
 // @notice: Draws random cards from the player's deck
 // @param state: the current GameState (session, card_deck_len, card_deck)
@@ -421,6 +470,7 @@ func _draw_cards{
     return seed;
 }
 
+// static room generation
 func _get_rooms{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> PackedRooms {
