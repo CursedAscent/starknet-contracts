@@ -11,7 +11,7 @@ function generateDefaultCalldata() {
     calldata.push(toBN(289194267461).toString()); // symbol
     calldata.push(toBN(52).toString()); // total_supply
 
-    var base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm";
+    var base_uri = "ipfs://bafybeidjfvraull7utyoctrjtb55flpmftlfaj3ms67lhlajkllyfehbfa";
 
     calldata.push(toBN(base_uri.length).toString()); //base_uri_len
 
