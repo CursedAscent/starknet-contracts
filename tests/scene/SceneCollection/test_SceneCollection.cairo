@@ -1,11 +1,19 @@
 %lang starknet
 
-from src.scene.SceneCollection.interfaces.ISceneCollection import ISceneCollection
+from starkware.cairo.common.alloc import alloc
+
 from tests.scene.SceneCollection.utils import setup_scene_collection
+
+from src.scene.SceneCollection.interfaces.ISceneCollection import ISceneCollection
+from src.scene.constants import SceneData
 
 @external
 func __setup__() {
-    setup_scene_collection();
+    alloc_locals;
+
+    let (local data: SceneData*) = alloc();
+    assert [data] = SceneData(0x42);
+    setup_scene_collection(1, data);
 
     return ();
 }
@@ -29,7 +37,7 @@ func test_symbol{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
 
     local contract_address;
-    %{ ids.contract_address = context.scene_collection_address%}
+    %{ ids.contract_address = context.scene_collection_address %}
 
     let (symbol) = ISceneCollection.symbol(contract_address=contract_address);
 
@@ -47,7 +55,7 @@ func test_total_supply{syscall_ptr: felt*, range_check_ptr}() {
 
     let (total_supply) = ISceneCollection.total_supply(contract_address=contract_address);
 
-    assert total_supply = 0x84;
+    assert total_supply = 1;
 
     return ();
 }

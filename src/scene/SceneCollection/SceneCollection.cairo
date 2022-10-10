@@ -30,6 +30,8 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     data_len: felt,
     data: SceneData*,
 ) {
+    assert data_len = total_supply;
+
     AERC721.initializer(name, symbol, total_supply, base_uri_len, base_uri);
     _initializer(data_len - 1, data + data_len * SceneData.SIZE);
 

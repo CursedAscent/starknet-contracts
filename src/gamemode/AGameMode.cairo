@@ -45,12 +45,10 @@ namespace AGameMode {
     //
     // Constructor
     //
-    
+
     // Assumes that catalogs are already populated with collections for game_mode_id
     func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        game_mode_id: felt,
-        card_catalog_addr: felt,
-        scene_catalog_addr: felt,
+        game_mode_id: felt, card_catalog_addr: felt, scene_catalog_addr: felt
     ) {
         // cards
         card_catalog.write(card_catalog_addr);
@@ -87,10 +85,10 @@ namespace AGameMode {
         class: felt
     ) -> (cards_len: felt, cards: Card*) {
         alloc_locals;
-        let cards: Card* = alloc();
+        let (cards: Card*) = alloc();
         let (cards_len) = available_cards_len.read(class);
 
-        _get_available_cards(class, cards_len, cards + (cards_len - 1) * Card.SIZE);
+        _get_available_cards(class, cards_len, cards + cards_len * Card.SIZE);
 
         return (cards_len, cards);
     }
@@ -164,7 +162,7 @@ namespace AGameMode {
             catalog_addr, game_mode_id
         );
 
-        _store_cards(token_list_len - 1, token_list + (token_list_len) * TokenRef.SIZE);
+        _store_cards(token_list_len - 1, token_list + (token_list_len - 1) * TokenRef.SIZE);
 
         return ();
     }
@@ -177,7 +175,7 @@ namespace AGameMode {
         );
 
         scene_list_len.write(token_list_len);
-        _store_scenes(token_list_len - 1, token_list + (token_list_len) * TokenRef.SIZE);
+        _store_scenes(token_list_len - 1, token_list + (token_list_len - 1) * TokenRef.SIZE);
 
         return ();
     }
@@ -187,14 +185,14 @@ namespace AGameMode {
     ) {
         alloc_locals;
 
-        let card_tmp: Card = CardBuilderLib.build_partial_card([token_list - TokenRef.SIZE]);
+        let card_tmp: Card = CardBuilderLib.build_partial_card([token_list]);
         local card: Card = Card(
             card_tmp.card_ref, token_list_len, card_tmp.action, card_tmp.class, card_tmp.rarity, card_tmp.drawable
-        );
+            );
 
         // NB: unsafe assertion on card tokens layout in CardCollection
-        // card_id = (token_list_len - 1) - (nb_of_cards_per_class * class_value)
-        let card_id = (token_list_len - 1) - 13 * (card.class - 1);
+        // card_id = token_list_len - (nb_of_cards_per_class * class_value)
+        let card_id = token_list_len - 13 * (card.class - 1);
         available_cards.write(card.class, card_id, card);
 
         // NB: not optimized. we write too much on the contract state
@@ -205,15 +203,13 @@ namespace AGameMode {
             return ();
         }
 
-        _store_cards(token_list_len - 1, token_list - TokenRef.SIZE);
-
-        return ();
+        return _store_cards(token_list_len - 1, token_list - TokenRef.SIZE);
     }
 
     func _store_scenes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         token_list_len: felt, token_list: TokenRef*
     ) {
-        let scene: Scene = SceneBuilderLib.build_partial_scene([token_list - TokenRef.SIZE]);
+        let scene: Scene = SceneBuilderLib.build_partial_scene([token_list]);
 
         scene_list.write(token_list_len, scene);
 
@@ -231,8 +227,8 @@ namespace AGameMode {
             return ();
         }
 
-        let (card) = available_cards.read(class, cards_len);
-        assert [cards] = card;
+        let (card) = available_cards.read(class, cards_len - 1);
+        assert [cards - Card.SIZE] = card;
 
         return _get_available_cards(class, cards_len - 1, cards - Card.SIZE);
     }
