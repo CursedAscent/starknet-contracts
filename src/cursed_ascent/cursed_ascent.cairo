@@ -25,7 +25,7 @@ from src.action.constants import PackedActionHistory
 from src.room.library import RoomLib
 from src.room.constants import PackedRooms
 
-const GAME_ID = 'CURSED ASCENT';
+const GAME_ID = 'Cursed';
 
 //
 // Constructor
