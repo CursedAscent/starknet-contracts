@@ -27,7 +27,7 @@ func deploy_scene_catalog{
 
     ICatalog.add_collection(
         contract_address=scene_catalog_addr,
-        game_mode='CURSED ASCENT',
+        game_mode='Cursed',
         collection_addr=scene_collection_addr,
     );
 

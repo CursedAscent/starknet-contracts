@@ -121,7 +121,7 @@ func test_next_action{
     %{ ids.cursed_ascent_addr = context.cursed_ascent_addr %}
 
     // start new game
-    let (local game_state, local card_deck_len, local card_deck) = IGameMode.start_new_game(
+    let (local game_state, local card_deck_len, local card_deck: Card*) = IGameMode.start_new_game(
         contract_address=cursed_ascent_addr, adventurer_ref=TokenRef(0, AdventurerClassEnum.WARRIOR)
     );
 
@@ -130,14 +130,14 @@ func test_next_action{
     assert card_deck_len = 5;
 
     // pick room (there, scene_state should be initialized)
-    let (local game_state, local card_deck_len, local card_deck) = IGameMode.pick_room(
+    let (local game_state, local card_deck_len, local card_deck: Card*) = IGameMode.pick_room(
         cursed_ascent_addr, game_state, card_deck_len, card_deck, 1
     );
     assert game_state.current_state = SessionStateEnum.GAME_IN_ROOM;
     assert game_state.scene_state.current_event = SceneLogicEvents.INTRO;
 
     // next action
-    let (local hand_len, local hand: Card*) = IGameMode.draw_cards(
+    let (local hand_len, local hand: Card*, _) = IGameMode.draw_cards(
         cursed_ascent_addr, game_state, card_deck_len, card_deck
     );
     assert hand_len = 3;
@@ -158,7 +158,7 @@ func test_next_action{
     // let (
     //     local game_state,
     //     local card_deck_len,
-    //     local card_deck,
+    //     local card_deck: Card*,
     //     local history_len,
     //     local history: PackedActionHistory*,
     // ) = IGameMode.next_action(game_state, card_deck_len, card_deck);

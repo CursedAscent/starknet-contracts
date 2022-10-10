@@ -9,6 +9,7 @@ from src.session.Session import Session
 from src.scene.Scene import Scene
 from src.action.constants import PackedActionHistory
 from src.card.Card import Card
+from src.utils.xoshiro128.library import Xoshiro128_ss
 
 @contract_interface
 namespace IGameMode {
@@ -27,7 +28,7 @@ namespace IGameMode {
     // @param room_id: the index of the room picked by the player
     // @return the new GameState
     func pick_room(
-        session: Session, card_deck_len: felt, card_deck: felt*, room_id: felt
+        session: Session, card_deck_len: felt, card_deck: Card*, room_id: felt
     ) -> GameState {
     }
 
@@ -40,7 +41,7 @@ namespace IGameMode {
     func pick_prize(
         session: Session,
         card_deck_len: felt,
-        card_deck: felt*,
+        card_deck: Card*,
         room_id: felt,
         discard_card: felt,
         id: felt,
@@ -56,14 +57,14 @@ namespace IGameMode {
     func next_action(
         session: Session,
         card_deck_len: felt,
-        card_deck: felt*,
+        card_deck: Card*,
         room_id: felt,
         action_id: felt,
         target_id: felt,
     ) -> (
         session: Session,
         card_deck_len: felt,
-        card_deck: felt*,
+        card_deck: Card*,
         history_len: felt,
         history: PackedActionHistory*,
     ) {
@@ -76,10 +77,10 @@ namespace IGameMode {
     // func save_state(
     //     curr_session: Session,
     //     curr_card_deck_len: felt,
-    //     curr_card_deck: felt*,
+    //     curr_card_deck: Card*,
     //     new_session: Session,
     //     new_card_deck_len: felt,
-    //     new_card_deck: felt*,
+    //     new_card_deck: Card*,
     // ) -> GameState {
     // }
 
@@ -90,15 +91,15 @@ namespace IGameMode {
     // @notice: Draws random cards from the player's deck
     // @param state: the current GameState (session, card_deck_len, card_deck)
     // @return hand_len, hand: the hand array lenght, the array of cards drawn
-    func draw_cards(session: Session, card_deck_len: felt, card_deck: felt*) -> (
-        hand_len: felt, hand: Card*
+    func draw_cards(session: Session, card_deck_len: felt, card_deck: Card*) -> (
+        hand_len: felt, hand: Card*, seed: Xoshiro128_ss.XoshiroState
     ) {
     }
 
     // @notice: Generate prizes for a scene completion
     // @param state: the current GameState (session, card_deck_len, card_deck)
     // @return prizes: the id of the available cards as prizes (id of available_cards)
-    func get_prizes(session: Session, card_deck_len: felt, card_deck: felt*) -> (
+    func get_prizes(session: Session, card_deck_len: felt, card_deck: Card*) -> (
         prizes_len: felt, prizes: felt*
     ) {
     }

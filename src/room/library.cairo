@@ -54,8 +54,8 @@ namespace RoomLib {
         let total_rooms_next = total_rooms_current + nb_rooms_next;
 
         // check if target_room is in the next floor
-        let is_not_in_current_floor = is_le(total_rooms_current + 1, target_room);
-        let is_not_above_next_floor = is_le(target_room, total_rooms_next);
+        let is_not_in_current_floor = is_le(total_rooms_current, target_room);
+        let is_not_above_next_floor = is_le(target_room, total_rooms_next - 1);
 
         let result = is_not_above_next_floor + is_not_in_current_floor;
         if (result == 2) {

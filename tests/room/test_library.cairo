@@ -14,10 +14,10 @@ func test_can_access_next_floor{
     local rooms: felt;
 
     // layout:
-    // 4         room7
-    // 3 room4   room5   room6
-    // 2     room2    room3
-    // 1         room1
+    // 4         room6
+    // 3 room3   room4   room5
+    // 2     room1    room2
+    // 1         room0
     %{
         RoomsIn1 = 1
         RoomsIn2 = 2
@@ -34,9 +34,9 @@ func test_can_access_next_floor{
     // let can_access = RoomLib.can_access_next_floor(rooms, 0, -1);
     // assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 0, 0);
-    assert can_access = FALSE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 0, 1);
     assert can_access = TRUE;
+    let can_access = RoomLib.can_access_next_floor(rooms, 0, 1);
+    assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 0, 2);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 0, 3);
@@ -47,42 +47,42 @@ func test_can_access_next_floor{
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 6);
     assert can_access = FALSE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 0, 7);
-    assert can_access = FALSE;
 
     // floor 1
-    let can_access = RoomLib.can_access_next_floor(rooms, 1, 1);
+    let can_access = RoomLib.can_access_next_floor(rooms, 1, 0);
     assert can_access = FALSE;
+    let can_access = RoomLib.can_access_next_floor(rooms, 1, 1);
+    assert can_access = TRUE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 2);
     assert can_access = TRUE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 3);
-    assert can_access = TRUE;
+    assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 4);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 5);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 1, 6);
     assert can_access = FALSE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 1, 7);
-    assert can_access = FALSE;
 
     // floor 2
+    let can_access = RoomLib.can_access_next_floor(rooms, 2, 0);
+    assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 1);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 2);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 3);
-    assert can_access = FALSE;
+    assert can_access = TRUE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 4);
     assert can_access = TRUE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 5);
     assert can_access = TRUE;
     let can_access = RoomLib.can_access_next_floor(rooms, 2, 6);
-    assert can_access = TRUE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 2, 7);
     assert can_access = FALSE;
 
     // floor 3
+    let can_access = RoomLib.can_access_next_floor(rooms, 3, 0);
+    assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 3, 1);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 3, 2);
@@ -94,11 +94,11 @@ func test_can_access_next_floor{
     let can_access = RoomLib.can_access_next_floor(rooms, 3, 5);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 3, 6);
-    assert can_access = FALSE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 3, 7);
     assert can_access = TRUE;
 
     // floor 4
+    let can_access = RoomLib.can_access_next_floor(rooms, 4, 0);
+    assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 4, 1);
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 4, 2);
@@ -111,11 +111,9 @@ func test_can_access_next_floor{
     assert can_access = FALSE;
     let can_access = RoomLib.can_access_next_floor(rooms, 4, 6);
     assert can_access = FALSE;
-    let can_access = RoomLib.can_access_next_floor(rooms, 4, 7);
-    assert can_access = FALSE;
 
     // there is no check in library for non existant room
-    // let can_access = RoomLib.can_access_next_floor(rooms, 4, 8);
+    // let can_access = RoomLib.can_access_next_floor(rooms, 4, 7);
     // assert can_access = FALSE;
 
     return ();

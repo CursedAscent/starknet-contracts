@@ -25,7 +25,7 @@ from src.action.constants import PackedActionHistory
 from src.room.library import RoomLib
 from src.room.constants import PackedRooms
 
-const GAME_ID = 'CURSED ASCENT';
+const GAME_ID = 'Cursed';
 
 //
 // Constructor
@@ -103,7 +103,7 @@ func stop_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 @external
 func pick_room{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(session: Session, card_deck_len: felt, card_deck: felt*, room_id: felt) -> GameState {
+}(session: Session, card_deck_len: felt, card_deck: Card*, room_id: felt) -> GameState {
     alloc_locals;
 
     // check if player is not in room
@@ -155,7 +155,7 @@ func pick_prize{
 }(
     session: Session,
     card_deck_len: felt,
-    card_deck: felt*,
+    card_deck: Card*,
     room_id: felt,
     discard_card: felt,
     id: felt,
@@ -164,7 +164,7 @@ func pick_prize{
     assert session.current_state = SessionStateEnum.GAME_IN_ROOM;
     assert session.scene_state.is_finished = 1;
 
-    let (local new_deck) = alloc();
+    let (local new_deck: Card*) = alloc();
     tempvar new_deck_len;
     tempvar seed: Xoshiro128_ss.XoshiroState;
 
@@ -187,8 +187,9 @@ func pick_prize{
             let selected_card_id = [prizes + id];
 
             // copy previous deck
-            memcpy(new_deck, card_deck, card_deck_len);
+            memcpy(new_deck, card_deck, card_deck_len * Card.SIZE);
             // add new card
+            // todo: change id of new card
             memcpy(new_deck + card_deck_len, cards + Card.SIZE * selected_card_id, Card.SIZE);
             new_deck_len = card_deck_len + 1;
 
@@ -219,7 +220,6 @@ func pick_prize{
         }
     }
 
-    // todo: change session.current_state to GAME_IN_MAP
     let session: Session = Session(
         session.account_addr,
         session.player,
@@ -247,14 +247,14 @@ func next_action{
 }(
     session: Session,
     card_deck_len: felt,
-    card_deck: felt*,
+    card_deck: Card*,
     room_id: felt,
     action_id: felt,
     target_id: felt,
 ) -> (
     session: Session,
     card_deck_len: felt,
-    card_deck: felt*,
+    card_deck: Card*,
     history_len: felt,
     history: PackedActionHistory*,
 ) {
@@ -315,7 +315,7 @@ func next_action{
 @view
 func draw_cards{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(session: Session, card_deck_len: felt, card_deck: felt*) -> (
+}(session: Session, card_deck_len: felt, card_deck: Card*) -> (
     hand_len: felt, hand: Card*, seed: Xoshiro128_ss.XoshiroState
 ) {
     alloc_locals;
@@ -328,11 +328,14 @@ func draw_cards{
     let seed = _draw_cards(card_deck_len, 3, hand_ids, seed);
 
     // fill hand variable
-    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids]);
+    let id = [hand_ids];
+    let card: Card = [card_deck + id * Card.SIZE];
     assert [hand] = card;
-    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids + 1]);
+    let id = [hand_ids + 1];
+    let card: Card = [card_deck + id * Card.SIZE];
     assert [hand + Card.SIZE] = card;
-    let card: Card = AGameMode.get_available_card(session.player.class, [hand_ids + 2]);
+    let id = [hand_ids + 2];
+    let card: Card = [card_deck + id * Card.SIZE];
     assert [hand + Card.SIZE * 2] = card;
 
     return (3, hand, seed);
@@ -344,7 +347,7 @@ func draw_cards{
 @view
 func get_prizes{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(session: Session, card_deck_len: felt, card_deck: felt*) -> (
+}(session: Session, card_deck_len: felt, card_deck: Card*) -> (
     prizes_len: felt, prizes: felt*, seed: Xoshiro128_ss.XoshiroState
 ) {
     alloc_locals;
@@ -407,13 +410,15 @@ func _draw_cards{
         return seed;
     }
 
+    let seed = _draw_cards(card_deck_len, card_ids_len - 1, card_ids + 1, seed);
+
     let (seed, rnd) = Xoshiro128_ss.next_unique(
         seed, card_ids_len - 1, card_ids + 1, card_deck_len
     );
     let (_, id) = unsigned_div_rem(rnd, card_deck_len);
-    [card_ids] = id;
+    assert [card_ids] = id;
 
-    return _draw_cards(card_deck_len, card_ids_len - 1, card_ids + 1, seed);
+    return seed;
 }
 
 func _get_rooms{

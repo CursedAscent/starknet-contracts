@@ -19,7 +19,7 @@ func deploy_card_catalog{
         ids.card_collection_address = context.card_collection_address
     %}
 
-    ICatalog.add_collection(catalog_contract_address, 'CURSED ASCENT', card_collection_address);
+    ICatalog.add_collection(catalog_contract_address, 'Cursed', card_collection_address);
 
     return ();
 }
