@@ -6,6 +6,7 @@
 from src.gamemode.constants import GameState
 from src.utils.constants import TokenRef
 from src.session.Session import Session
+from src.scene.Scene import Scene
 from src.action.constants import PackedActionHistory
 from src.card.Card import Card
 
@@ -106,5 +107,10 @@ namespace IGameMode {
     // @param class: the class identifier (AdventurerClassEnum)
     // @rturn cards_len, cards: the list of the available cards
     func get_available_cards(class: felt) -> (cards_len: felt, cards: Card*) {
+    }
+
+    // @notice: get all scenes available in the game mode
+    // @returns the scene list and its length
+    func get_scene_list() -> (scene_list_len: felt, scene_list: Scene*) {
     }
 }

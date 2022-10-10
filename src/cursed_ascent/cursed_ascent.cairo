@@ -15,12 +15,15 @@ from src.player.Player import Player
 from src.player.PlayerBuilder.library import PlayerBuilderLib
 from src.card.Card import Card
 from src.scene.Scene import Scene
+from src.scene.SceneBuilder.library import SceneBuilderLib
 from src.scene.SceneState import SceneState
 from src.scene.SceneLogic.constants import SceneLogicEvents
 from src.scene.SceneLogic.interfaces.ISceneLogic import ISceneLogic
 from src.utils.constants import TokenRef
 from src.utils.xoshiro128.library import Xoshiro128_ss
 from src.action.constants import PackedActionHistory
+from src.room.library import RoomLib
+from src.room.constants import PackedRooms
 
 const GAME_ID = 'CURSED ASCENT';
 
@@ -62,9 +65,8 @@ func start_new_game{
     let scene_state = AGameMode.generate_empty_scene();
     let current_scene_id = -1;
 
-    // todo: rooms library
-    let rooms = 0;
-    let rooms_paths = 0;
+    let rooms = _get_rooms();
+    let rooms_paths = 0;  // unused for this game mode
     let floor = 0;
 
     let (init_seed) = get_block_number();
@@ -99,14 +101,42 @@ func stop_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 // @param room_id: the index of the room picked by the player
 // @return the new GameState
 @external
-func pick_room{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    session: Session, card_deck_len: felt, card_deck: felt*, room_id: felt
-) -> GameState {
-    // todo: rooms library
+func pick_room{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(session: Session, card_deck_len: felt, card_deck: felt*, room_id: felt) -> GameState {
+    alloc_locals;
 
-    // check if selected room is connected to actual room (session.current_scene_id)
+    // check if player is not in room
+    let session_state = session.current_state;
+    if (session_state != SessionStateEnum.GAME_INITIALIZED) {
+        if (session_state != SessionStateEnum.GAME_IN_MAP) {
+            assert 0 = 1;  // can't pick room if not out of another one
+        }
+    }
 
-    // update session
+    // check if the room is accessible
+    let is_accessible = RoomLib.can_access_next_floor(session.rooms, session.floor, room_id - 1);
+    assert is_accessible = 1;
+
+    // Initialize the scene
+    let (scenes_len, scenes: Scene*) = get_scene_list();
+    let scene = [scenes + (room_id - 1) * Scene.SIZE];
+    let scene_state: SceneState = ISceneLogic.initialize_scene(
+        scene.logic_contract_addr, session.player
+    );
+
+    // Update Session
+    let session: Session = Session(
+        session.account_addr,
+        session.player,
+        scene_state,
+        room_id - 1,
+        session.floor + 1,
+        session.rooms,
+        session.rooms_paths,
+        SessionStateEnum.GAME_IN_ROOM,
+        session.seed,
+    );
 
     // save with SessionManager Library
 
@@ -349,6 +379,21 @@ func get_available_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     return AGameMode.get_available_cards(class);
 }
 
+// @notice: get all scenes available in the game mode
+// @returns the scene list and its length
+@view
+func get_scene_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    scene_list_len: felt, scene_list: Scene*
+) {
+    alloc_locals;
+
+    let (local scene_list: Scene*) = alloc();
+    let scene = AGameMode.get_scene(0);
+    assert [scene_list] = scene;
+
+    return (1, scene_list);
+}
+
 //
 // Internals
 //
@@ -369,6 +414,18 @@ func _draw_cards{
     [card_ids] = id;
 
     return _draw_cards(card_deck_len, card_ids_len - 1, card_ids + 1, seed);
+}
+
+func _get_rooms{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> PackedRooms {
+    let floor1 = 1;
+    let floor_nb = 1;
+
+    // todo: write a generic function for packing rooms
+    let packed_rooms: PackedRooms = floor1 + (floor_nb * 2 ** 240);
+
+    return packed_rooms;
 }
 
 // // @notice: Saves a new GameState in storage
