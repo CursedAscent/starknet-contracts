@@ -30,7 +30,7 @@ const GAME_ID = 'CURSED ASCENT';
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     card_catalog_addr: felt, scene_catalog_addr: felt
-){
+) {
     AGameMode.initializer(GAME_ID, card_catalog_addr, scene_catalog_addr);
 
     return ();
@@ -45,7 +45,7 @@ func start_new_game{
 }(adventurer_ref: TokenRef) -> GameState {
     alloc_locals;
 
-    // Check if session manager already store a game for caller
+    // Check if session manager already stores a game for caller
     let (caller_address) = get_caller_address();
     // todo ^
 
@@ -54,7 +54,7 @@ func start_new_game{
 
     // generate initial card deck
     let (cards_len, cards) = AGameMode.get_available_cards(player.class);
-    let (local card_deck_len, local card_deck) = cursed_ascentLibrary.create_deck(
+    let (card_deck_len, card_deck) = cursed_ascentLibrary.create_deck(
         player.class, cards_len, cards
     );
 

@@ -66,7 +66,7 @@ namespace ACatalog {
 
     // @notice Add a collection to a given game mode.
     // If the game mode doesn't exist yet, the caller became the owner of that game_mode.
-    // If the collection is already there,
+    // If the collection is already there, this function does nothing.
     // @param game_mode: the id of the game mode.
     // @param collection_addr: the address of the collection.
     func add_collection{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(

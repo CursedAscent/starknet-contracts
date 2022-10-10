@@ -9,6 +9,6 @@ using EnemyList = (Enemy, Enemy, Enemy, Enemy, Enemy, Enemy, Enemy, Enemy);
 struct SceneState {
     enemies_len: felt,
     enemies: EnemyList,
-    current_event: felt,  // ID of scene event (desc in nft metadata)
+    current_event: felt,  // SceneLogicEvents (desc in nft metadata)
     is_finished: felt,  // 0 is false, 1 is true
 }

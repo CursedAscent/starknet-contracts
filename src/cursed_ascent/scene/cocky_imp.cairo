@@ -29,10 +29,13 @@ from src.action.constants import PackedActionHistory, PackedAction
 const IMP_INDEX = 0;
 
 namespace EVENT_LIST {
+    // SceneLogicEvents
     const NO_EVENT = SceneLogicEvents.NO_EVENT;
     const INTRO = SceneLogicEvents.INTRO;
     const OUTRO = SceneLogicEvents.OUTRO;
     const PLAYER_DEAD = SceneLogicEvents.PLAYER_DEAD;
+
+    // custom events
 }
 
 //
