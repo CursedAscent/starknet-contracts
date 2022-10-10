@@ -4,8 +4,8 @@ from src.player.constants import AdventurerClassEnum
 
 func setup_card_collection() {
     alloc_locals;
-    local name = 'hello';
-    local symbol = 'HELL';
+    local name = 'Cursed';
+    local symbol = 'CURSE';
     local WAR = AdventurerClassEnum.WARRIOR;
     local HUN = AdventurerClassEnum.HUNTER;
     local LMA = AdventurerClassEnum.LIGHT_MAGE;
