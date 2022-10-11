@@ -13,7 +13,6 @@ from tests.cursedascent.scene.utils import deploy_cocky_imp
 func __setup__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
-    deploy_cocky_imp();
     return ();
 }
 

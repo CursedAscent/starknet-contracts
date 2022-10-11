@@ -1,7 +1,13 @@
 %lang starknet
 
-from src.card.CardCollection.interfaces.ICardCollection import ICardCollection
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+
 from tests.card.CardCollection.utils import setup_card_collection
+
+from src.card.CardCollection.interfaces.ICardCollection import ICardCollection
+from src.action.library import ActionLib
+from src.action.constants import Action
+from src.player.constants import AdventurerClassEnum
 
 //
 // Setup
@@ -9,8 +15,6 @@ from tests.card.CardCollection.utils import setup_card_collection
 
 @external
 func __setup__() {
-    setup_card_collection();
-
     return ();
 }
 
@@ -19,78 +23,98 @@ func __setup__() {
 //
 
 @external
-func test_name{syscall_ptr: felt*, range_check_ptr}() {
+func test_name{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
     let (name) = ICardCollection.name(contract_address=contract_address);
 
-    assert name = 'hello';
+    assert name = 'Cursed';
 
     return ();
 }
 
 @external
-func test_symbol{syscall_ptr: felt*, range_check_ptr}() {
+func test_symbol{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
     let (symbol) = ICardCollection.symbol(contract_address=contract_address);
 
-    assert symbol = 'HELL';
+    assert symbol = 'CURSE';
 
     return ();
 }
 
 @external
-func test_total_supply{syscall_ptr: felt*, range_check_ptr}() {
+func test_total_supply{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
     let (total_supply) = ICardCollection.total_supply(contract_address=contract_address);
 
-    assert total_supply = 0x84;
+    assert total_supply = 52;
 
     return ();
 }
 
 @external
-func test_get_action{syscall_ptr: felt*, range_check_ptr}() {
+func test_get_action{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
     let (packed_action) = ICardCollection.get_action(contract_address=contract_address, token_id=0);
 
-    assert packed_action = 0x1;
+    local action1: Action = Action('DH', 10, 0, 0, 0, 0, 'TS', 1, 0, 0, 0, 0);
+    let (local pa1) = ActionLib.pack_action(action1);
+    assert packed_action = pa1;
 
     return ();
 }
 
 @external
-func test_get_class{syscall_ptr: felt*, range_check_ptr}() {
+func test_get_class{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
 
     let (class) = ICardCollection.get_class(contract_address=contract_address, token_id=14);
 
-    assert class = 0x2;
+    assert class = AdventurerClassEnum.HUNTER;
 
     return ();
 }
 
 @external
-func test_get_rarity{syscall_ptr: felt*, range_check_ptr}() {
+func test_get_rarity{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}
@@ -103,8 +127,11 @@ func test_get_rarity{syscall_ptr: felt*, range_check_ptr}() {
 }
 
 @external
-func test_tokenURI{syscall_ptr: felt*, range_check_ptr}() {
+func test_tokenURI{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_card_collection();
 
     local contract_address;
     %{ ids.contract_address = context.card_collection_address %}

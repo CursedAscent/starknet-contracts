@@ -1,8 +1,13 @@
 %lang starknet
 
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.alloc import alloc
+
+from tests.cursedascent.scene.utils import deploy_cocky_imp
+
 from src.scene.constants import SceneData
 
-func setup_scene_collection(data_len: felt, data: SceneData*) {
+func deploy_scene_collection(data_len: felt, data: SceneData*) {
     alloc_locals;
     local name = 'Cursed Scenes';
     local symbol = 'CURSED';
@@ -27,6 +32,19 @@ func setup_scene_collection(data_len: felt, data: SceneData*) {
 
         context.scene_collection_address = deploy_contract("./src/scene/SceneCollection/SceneCollection.cairo", call_data).contract_address
     %}
+
+    return ();
+}
+
+func setup_scene_collection{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+
+    deploy_cocky_imp();
+    let (local data: felt*) = alloc();
+    %{ memory[ids.data] = context.cocky_imp_address %}
+    deploy_scene_collection(1, cast(data, SceneData*));
 
     return ();
 }

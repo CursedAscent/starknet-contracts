@@ -5,7 +5,7 @@ from starkware.cairo.common.alloc import alloc
 
 from src.catalog.interfaces.ICatalog import ICatalog
 from src.scene.constants import SceneData
-from tests.scene.SceneCollection.utils import setup_scene_collection
+from tests.scene.SceneCollection.utils import deploy_scene_collection
 
 func deploy_scene_catalog{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -14,15 +14,15 @@ func deploy_scene_catalog{
     local scene_catalog_addr;
     local scene_collection_addr;
 
-    setup_scene_collection(scene_collection_data_len, scene_collection_data);
+    deploy_scene_collection(scene_collection_data_len, scene_collection_data);
 
     %{
         context.scene_catalog_address = deploy_contract(
         "./src/scene/SceneCatalog/SceneCatalog.cairo",
         ).contract_address
 
-        ids.scene_catalog_addr = context.scene_catalog_address;
-        ids.scene_collection_addr = context.scene_collection_address;
+        ids.scene_catalog_addr = context.scene_catalog_address
+        ids.scene_collection_addr = context.scene_collection_address
     %}
 
     ICatalog.add_collection(

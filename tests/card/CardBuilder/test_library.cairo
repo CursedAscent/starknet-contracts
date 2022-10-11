@@ -55,6 +55,7 @@ func test_build_partial_card{syscall_ptr: felt*, range_check_ptr}() {
     assert card.action = 0x4;
     assert card.class = 0x5;
     assert card.rarity = 0x6;
+    assert card.drawable = 1;
 
     return ();
 }

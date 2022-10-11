@@ -1,6 +1,6 @@
 %lang starknet
 
-from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from tests.scene.SceneCollection.utils import setup_scene_collection
 
@@ -9,18 +9,15 @@ from src.scene.constants import SceneData
 
 @external
 func __setup__() {
-    alloc_locals;
-
-    let (local data: SceneData*) = alloc();
-    assert [data] = SceneData(0x42);
-    setup_scene_collection(1, data);
-
     return ();
 }
 
 @external
-func test_name{syscall_ptr: felt*, range_check_ptr}() {
+func test_name{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_scene_collection();
 
     local contract_address;
     %{ ids.contract_address = context.scene_collection_address %}
@@ -33,8 +30,11 @@ func test_name{syscall_ptr: felt*, range_check_ptr}() {
 }
 
 @external
-func test_symbol{syscall_ptr: felt*, range_check_ptr}() {
+func test_symbol{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_scene_collection();
 
     local contract_address;
     %{ ids.contract_address = context.scene_collection_address %}
@@ -47,8 +47,11 @@ func test_symbol{syscall_ptr: felt*, range_check_ptr}() {
 }
 
 @external
-func test_total_supply{syscall_ptr: felt*, range_check_ptr}() {
+func test_total_supply{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_scene_collection();
 
     local contract_address;
     %{ ids.contract_address = context.scene_collection_address %}
@@ -61,8 +64,11 @@ func test_total_supply{syscall_ptr: felt*, range_check_ptr}() {
 }
 
 @external
-func test_tokenURI{syscall_ptr: felt*, range_check_ptr}() {
+func test_tokenURI{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_scene_collection();
 
     local contract_address;
     %{ ids.contract_address = context.scene_collection_address %}
@@ -91,8 +97,11 @@ func test_tokenURI{syscall_ptr: felt*, range_check_ptr}() {
 }
 
 @external
-func test_get_logic_contract_addr{syscall_ptr: felt*, range_check_ptr}() {
+func test_get_logic_contract_addr{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
+    setup_scene_collection();
 
     local contract_address;
     %{ ids.contract_address = context.scene_collection_address %}
@@ -101,7 +110,9 @@ func test_get_logic_contract_addr{syscall_ptr: felt*, range_check_ptr}() {
         contract_address=contract_address, token_id=0
     );
 
-    assert logic_contract_addr = 0x42;
+    local cocky_imp_addr;
+    %{ ids.cocky_imp_addr = context.cocky_imp_address %}
+    assert logic_contract_addr = cocky_imp_addr;
 
     return ();
 }

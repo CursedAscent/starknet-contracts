@@ -163,6 +163,7 @@ func next_step{
     }
 
     // todo: active effects for the enemies
+    // todo: remove player pp after enemies actions
 
     // set imp next action
     let (_, next_action_id) = unsigned_div_rem(imp.next_action_id + 1, 3);  // modulo 3 (it's a loop over the 3 available actions)
