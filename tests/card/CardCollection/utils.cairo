@@ -1,8 +1,14 @@
 %lang starknet
 
-from src.player.constants import AdventurerClassEnum
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
-func setup_card_collection() {
+from src.player.constants import AdventurerClassEnum
+from src.action.library import ActionLib
+from src.action.constants import Action
+
+func setup_card_collection{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
     local name = 'Cursed';
     local symbol = 'CURSE';
@@ -11,12 +17,17 @@ func setup_card_collection() {
     local LMA = AdventurerClassEnum.LIGHT_MAGE;
     local DMA = AdventurerClassEnum.DARK_MAGE;
 
+    local action1: Action = Action('DH', 10, 0, 0, 0, 0, 'TS', 1, 0, 0, 0, 0);
+    let (local pa1) = ActionLib.pack_action(action1);
+    local action2: Action = Action('PP', 20, 0, 0, 0, 0, 'TP', 1, 0, 0, 0, 0);
+    let (local pa2) = ActionLib.pack_action(action2);
+
     %{
         call_data = []
 
         call_data.append(ids.name)
         call_data.append(ids.symbol)
-        call_data.append(0x84)
+        call_data.append(52)
 
         base_uri = "ipfs://bafybeidlakszlrz2xfjca5r4sfj2watoove4vz3oism5ufmc7dxzlxfywm"
 
@@ -26,22 +37,22 @@ func setup_card_collection() {
         call_data.append(13*4)
 
         for i in range(13):
-            call_data.append(0x1)
+            call_data.append(ids.pa1 if (i % 2) == 0 else ids.pa2)
             call_data.append(ids.WAR)
             call_data.append(0x1)
 
         for i in range(13):
-            call_data.append(0x1)
+            call_data.append(ids.pa1 if (i % 2) == 0 else ids.pa2)
             call_data.append(ids.HUN)
             call_data.append(0x1)
 
         for i in range(13):
-            call_data.append(0x1)
+            call_data.append(ids.pa1 if (i % 2) == 0 else ids.pa2)
             call_data.append(ids.LMA)
             call_data.append(0x1)
 
         for i in range(13):
-            call_data.append(0x1)
+            call_data.append(ids.pa1 if (i % 2) == 0 else ids.pa2)
             call_data.append(ids.DMA)
             call_data.append(0x1)
 

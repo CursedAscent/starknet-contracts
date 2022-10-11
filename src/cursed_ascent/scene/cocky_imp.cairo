@@ -4,8 +4,10 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
-
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.memcpy import memcpy
+
 from src.scene.SceneLogic.ASceneLogic import ASceneLogic
 from src.scene.constants import SceneTypeEnum
 from src.scene.SceneState import SceneState, EnemyList
@@ -113,11 +115,14 @@ func next_step{
     alloc_locals;
     let (__fp__, _) = get_fp_and_pc();
     let imp = scene_state.enemies[0];
+    let (local total_history: felt*) = alloc();
 
     // player action
     let (local scene_state, player, history_len, history, seed) = ActionLib.play_action(
         scene_state, player, player_action, -1, target_id, seed
     );
+    memcpy(total_history, history, history_len);
+    let total_history_len = history_len;
 
     if (player.health_points == 0) {
         // player is dead :(
@@ -135,12 +140,14 @@ func next_step{
     // todo: active effects for the player
 
     // imp action
-    tempvar imp_action_list: felt* = &(imp.action_list);
+    tempvar imp_action_list: felt* = &imp + Enemy.action_list;
     tempvar imp_action: PackedAction = [imp_action_list + imp.next_action_id];
     let imp_target = -1;  // NB: if it should target one enemy ('TS' in target attribute), change this value accordingly
     let (local scene_state, player, history_len, history, seed) = ActionLib.play_action(
-        scene_state, player, imp_action, 0, -1, seed
+        scene_state, player, imp_action, 0, imp_target, seed
     );
+    memcpy(total_history + total_history_len, history, history_len);
+    let total_history_len = total_history_len + history_len;
 
     if (player.health_points == 0) {
         // player is dead :(
@@ -162,7 +169,7 @@ func next_step{
     let imp = _update_enemy_next_action(next_action_id, imp);
     let scene_state = _update_scene_state_enemy_list(imp, scene_state, EVENT_LIST.NO_EVENT);
 
-    return (scene_state, player, history_len, history, seed);
+    return (scene_state, player, total_history_len, total_history, seed);
 }
 
 //

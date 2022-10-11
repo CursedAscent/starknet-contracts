@@ -94,6 +94,7 @@ namespace AttributeEnum {
     const PROTECTION_BONUS = 'PB';
     const DOUBLE_DAMAGE = 'DD';
     const DOUBLE_PROTECTION = 'DP';
+    // const DRAW_MORE_CARD = 'DC';
 
     // Debuffs (value is amount of stack)
     const WEAKEN_DEFENSE = 'WD';
@@ -115,9 +116,12 @@ namespace AttributeEnum {
     const WD_IF_TARGET_POISONED = 'SI';
     const PASSIVE_POISON = 'PO';
     const ATTACK_HEALTH_FOR_POISON_COUNT = 'LI';
+    // const ATTACK_WITH_PP = 'PPA';
+    // const BLEED_IF_NO_PP = 'FL';
+    // const WD_AND_WA_EACH_TURN = 'SCH';
 
     // Targets (value is number of repetition)
-    const SELECTED_TARGET = 'TS';  // for Cards ONLY (player selection)
+    const SELECTED_TARGET = 'TS';
     const RANDOM_TARGET = 'TR';
     const ALL_TARGET = 'TA';
     const PLAYER_TARGET = 'TP';

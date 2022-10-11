@@ -30,7 +30,9 @@ namespace cursed_ascentLibrary {
             return _create_dark_mage_deck(cards_len, cards);
         }
 
-        assert 0 = 1;  // should not come here
+        with_attr error_message("cursed_ascentLibrary.create_deck: unknown adventurer class.") {
+            assert 1 = 0;
+        }
         return (0, cast(0, Card*));
     }
 
@@ -43,19 +45,6 @@ namespace cursed_ascentLibrary {
         let player = Player(0, 0, 0, 0, 0, 0, 0, player_ref, 0, 0);
 
         return player;
-    }
-
-    func _build_warrior() -> Player {
-        let damage = 100;
-        let pp = 100;
-        let armor = 100;
-        let max_hp = 60;
-        let player_ref = TokenRef(0, 0);
-
-        let warrior = Player(
-            damage, pp, armor, max_hp, max_hp, 0, 0, player_ref, AdventurerClassEnum.WARRIOR, 0
-        );
-        return warrior;
     }
 
     func _create_warrior_deck{syscall_ptr: felt*, range_check_ptr}(

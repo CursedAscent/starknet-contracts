@@ -112,15 +112,23 @@ func pick_room{
 
     // check if received GameState is valid
     let (caller_address) = get_caller_address();
-    assert caller_address = session.account_addr;
+    with_attr error_message("cursed_ascent.pick_room: caller is not the owner of this session.") {
+        assert caller_address = session.account_addr;
+    }
     let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
-    assert is_game_state_valid = 1;
+    with_attr error_message(
+            "cursed_ascent.pick_room: received game state doesn't match with the saved hash. You should start a new game...") {
+        assert is_game_state_valid = 1;
+    }
 
     // check if player is not in room
     let session_state = session.current_state;
     if (session_state != SessionStateEnum.GAME_INITIALIZED) {
         if (session_state != SessionStateEnum.GAME_IN_MAP) {
-            assert 0 = 1;  // can't pick room if not out of another one
+            with_attr error_message(
+                    "cursed_ascent.pick_room: Session.current_state must be either SessionStateEnum.GAME_INITIALIZED or SessionStateEnum.GAME_IN_MAP.") {
+                assert 0 = 1;
+            }
         }
     }
 
@@ -175,17 +183,22 @@ func pick_prize{
 
     // check if received GameState is valid
     let (caller_address) = get_caller_address();
-    assert caller_address = session.account_addr;
+    with_attr error_message("cursed_ascent.pick_prize: caller is not the owner of this session.") {
+        assert caller_address = session.account_addr;
+    }
     let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
-    assert is_game_state_valid = 1;
+    with_attr error_message(
+            "cursed_ascent.pick_prize: received game state doesn't match with the saved hash. You should start a new game...") {
+        assert is_game_state_valid = 1;
+    }
 
     // check if we are in a finished scene
     assert session.current_state = SessionStateEnum.GAME_IN_ROOM;
     assert session.scene_state.is_finished = 1;
 
     let (local new_deck: Card*) = alloc();
-    tempvar new_deck_len;
-    tempvar seed: Xoshiro128_ss.XoshiroState;
+    local new_deck_len;
+    local seed: Xoshiro128_ss.XoshiroState;
 
     if (session.scene_state.current_event != SceneLogicEvents.OUTRO) {
         // This is not the classic OUTRO event from SceneLogic, so no rewards
@@ -289,9 +302,14 @@ func next_action{
 
     // check if received GameState is valid
     let (caller_address) = get_caller_address();
-    assert caller_address = session.account_addr;
+    with_attr error_message("cursed_ascent.next_action: caller is not the owner of this session.") {
+        assert caller_address = session.account_addr;
+    }
     let is_game_state_valid = AGameMode.check_stored_game_state(session, card_deck_len, card_deck);
-    assert is_game_state_valid = 1;
+    with_attr error_message(
+            "cursed_ascent.next_action: received game state doesn't match with the saved hash. You should start a new game...") {
+        assert is_game_state_valid = 1;
+    }
 
     // check if we are in an ongoing scene
     assert session.current_state = SessionStateEnum.GAME_IN_ROOM;
@@ -305,7 +323,7 @@ func next_action{
 
     // get player selected card
     let (hand_len, hand, seed) = draw_cards(session, card_deck_len, card_deck);
-    let card: Card = [hand + action_id];
+    let card: Card = [hand + action_id * Card.SIZE];
 
     // compute new state
     let (
@@ -318,7 +336,7 @@ func next_action{
         scene_logic, session.scene_state, seed, session.player, card.action, target_id
     );
 
-    tempvar new_session_state;
+    local new_session_state;
     if (scene_state.current_event == SceneLogicEvents.PLAYER_DEAD) {
         assert scene_state.is_finished = 1;
         new_session_state = SessionStateEnum.GAME_LOST;

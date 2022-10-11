@@ -5,6 +5,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.math_cmp import is_nn
+from starkware.cairo.common.math import unsigned_div_rem
 
 from src.scene.SceneState import SceneState, EnemyList
 from src.enemy.Enemy import Enemy
@@ -199,17 +200,17 @@ namespace ActionLib {
         let (__fp__, _) = get_fp_and_pc();
         let (local action: Action) = unpack_action(packed_action);
         local source_len;
-        let (local history) = alloc();
+        let (local history: PackedActionHistory*) = alloc();
 
         // first attribute
         local source1: Entity*;
         if (source_id == -1) {
             tempvar p_addr: felt* = &player;
-            source1 = p_addr;
+            source1 = cast(p_addr, Entity*);
             source_len = Player.SIZE;
         } else {
-            tempvar tmp = cast(&scene_state, felt) + 1 + source_id * Enemy.SIZE;
-            source1 = tmp;
+            tempvar tmp = &scene_state + 1 + source_id * Enemy.SIZE;
+            source1 = cast(tmp, Entity*);
             source_len = Enemy.SIZE;
         }
         let (
@@ -359,9 +360,11 @@ namespace ActionLib {
             tempvar bitwise_ptr = bitwise_ptr;
         } else {
             if (target == AttributeEnum.RANDOM_TARGET) {
-                let (tmp, _seed) = _fill_target_with_random(0, targets_id, target_value, seed);
+                let (tmp, seed) = _fill_target_with_random(
+                    0, targets_id, enemies_nb, target_value, seed
+                );
                 targets_id_len = tmp;
-                assert new_seed = _seed;
+                assert new_seed = seed;
 
                 tempvar syscall_ptr: felt* = syscall_ptr;
                 tempvar range_check_ptr = range_check_ptr;
@@ -381,7 +384,7 @@ namespace ActionLib {
                     tempvar bitwise_ptr = bitwise_ptr;
                 } else {
                     if (target == AttributeEnum.PLAYER_TARGET) {
-                        let (tmp) = _fill_target_with_player(0, targets_id, target_value);
+                        let (tmp) = _fill_target_with_selection(0, targets_id, -1, target_value);
                         targets_id_len = tmp;
                         assert new_seed = seed;
 
@@ -402,7 +405,10 @@ namespace ActionLib {
                             tempvar pedersen_ptr = pedersen_ptr;
                             tempvar bitwise_ptr = bitwise_ptr;
                         } else {
-                            assert 1 = 0;  // Unknown target identifier
+                            with_attr error_message(
+                                    "actionLib._apply_attribute: unknown target attribute parsed.") {
+                                assert 1 = 0;
+                            }
 
                             tempvar syscall_ptr: felt* = syscall_ptr;
                             tempvar range_check_ptr = range_check_ptr;
@@ -413,7 +419,7 @@ namespace ActionLib {
                 }
             }
         }
-        let result = _apply_attribute_to_targets(
+        let (local enemies, local player, local new_seed) = _apply_attribute_to_targets(
             source_len,
             source,
             source_id,
@@ -429,11 +435,11 @@ namespace ActionLib {
         );
 
         return (
-            enemies=result[0],
-            player=result[1],
+            enemies=enemies,
+            player=player,
             history_len=targets_id_len,
             history=history,
-            seed=result[2],
+            seed=new_seed,
         );
     }
 
@@ -476,68 +482,44 @@ namespace ActionLib {
 
         local target_id = [targets_id];
 
+        // compute action's attribute on one target
+        local target_entity_len;
+        local target_entity: Entity*;
+        if (target_id == -1) {
+            target_entity_len = Player.SIZE;
+            tempvar p_addr = &player;
+            target_entity = cast(p_addr, Entity*);
+        } else {
+            target_entity_len = Enemy.SIZE;
+            tempvar e_addr = &_enemies + Enemy.SIZE * target_id;
+            target_entity = cast(e_addr, Entity*);
+        }
+
+        let tmp = _apply_attribute_to_target(
+            source_len,
+            source,
+            source_id,
+            target_entity_len,
+            target_entity,
+            target_id,
+            attribute,
+            value,
+            seed,
+        );
+
+        local new_s_len = tmp[0];
+        local new_s: Entity* = tmp[1];
+        local new_t_len = tmp[2];
+        local new_t: Entity* = tmp[3];
+        [history] = tmp[4];
+        local new_seed: Xoshiro128_ss.XoshiroState;
+        assert new_seed = tmp[5];
+
         local tmp_new_player: Player;
         local new_player: Player;
         local tmp_new_enemies: EnemyList;
         local new_enemies: EnemyList;
-        local new_s_len;
-        local new_s: Entity*;
-        local new_t_len;
-        local new_t: Entity*;
-        local new_seed: Xoshiro128_ss.XoshiroState;
 
-        if (target_id == -1) {
-            let tmp1 = _apply_attribute_to_target(
-                source_len,
-                source,
-                source_id,
-                Player.SIZE,
-                cast(&player, Entity*),
-                target_id,
-                attribute,
-                value,
-                seed,
-            );
-            new_s_len = tmp1[0];
-            new_s = tmp1[1];
-            new_t_len = tmp1[2];
-            new_t = tmp1[3];
-            [history] = tmp1[4];
-            assert new_seed = tmp1[5];
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar bitwise_ptr: BitwiseBuiltin* = bitwise_ptr;
-        } else {
-            let tmp2 = _apply_attribute_to_target(
-                source_len,
-                source,
-                source_id,
-                Enemy.SIZE,
-                cast(&_enemies + Enemy.SIZE * target_id, Entity*),
-                target_id,
-                attribute,
-                value,
-                seed,
-            );
-            new_s_len = tmp2[0];
-            new_s = tmp2[1];
-            new_t_len = tmp2[2];
-            new_t = tmp2[3];
-            [history] = tmp2[4];
-            assert new_seed = tmp2[5];
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar bitwise_ptr: BitwiseBuiltin* = bitwise_ptr;
-        }
-
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-        tempvar bitwise_ptr: BitwiseBuiltin* = bitwise_ptr;
         // apply source update
         if (source_id == -1) {
             // it's the player
@@ -551,16 +533,14 @@ namespace ActionLib {
         } else {
             // it's an enemy
             memcpy(&tmp_new_player, &player, Player.SIZE);
-            // todo: it may fail because we give a tuple through a ptr
             inplace_insert_data(
-                Enemy.SIZE * target_id,
+                Enemy.SIZE * source_id,
                 Enemy.SIZE,
                 new_s,
                 Enemy.SIZE * 8,
                 &_enemies,
                 &tmp_new_enemies,
             );
-
             tempvar syscall_ptr = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
@@ -584,9 +564,13 @@ namespace ActionLib {
         } else {
             // it's an enemy
             memcpy(&new_player, &tmp_new_player, Player.SIZE);
-            // todo: it may fail because we give a tuple through a ptr
             inplace_insert_data(
-                Enemy.SIZE * target_id, Enemy.SIZE, new_t, Enemy.SIZE * 8, &_enemies, &new_enemies
+                Enemy.SIZE * target_id,
+                Enemy.SIZE,
+                new_t,
+                Enemy.SIZE * 8,
+                &tmp_new_enemies,
+                &new_enemies,
             );
 
             tempvar syscall_ptr = syscall_ptr;
@@ -669,11 +653,13 @@ namespace ActionLib {
             [new_source_state] = s.health_points;
             [new_source_state + 1] = s.protection_points;
             [new_source_state + 2] = s.active_effects;
+            // one history only
+            assert ah2 = dummy_ah;
 
             dh:
             local damage = mul_then_div(mul_then_div(value, s.damage_coef, 100), 100, t.armor_coef);
             let new_pp = clamp(0, t.protection_points - damage, t.protection_points);
-            tempvar new_hp;
+            local new_hp;
             if (new_pp == 0) {
                 let anti_compiler_bug = clamp(
                     0, t.health_points - (damage - t.protection_points), t.max_health_points
@@ -708,6 +694,7 @@ namespace ActionLib {
             [new_target_state + 2] = t.active_effects;
 
             assert ah1 = ActionHistory(attribute, damage, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -725,6 +712,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -742,6 +730,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -759,6 +748,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -777,6 +767,7 @@ namespace ActionLib {
             [new_target_state + 1] = new_pp;
             [new_target_state + 2] = t.active_effects;
             assert ah1 = ActionHistory(attribute, add_pp, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -795,6 +786,7 @@ namespace ActionLib {
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -813,6 +805,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -832,6 +825,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -849,6 +843,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -866,6 +861,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -883,6 +879,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -900,6 +897,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -910,6 +908,7 @@ namespace ActionLib {
             [new_source_state] = s.health_points;
             [new_source_state + 1] = s.protection_points;
             [new_source_state + 2] = s.active_effects;
+            assert ah2 = dummy_ah;
 
             wd:
             // local new_active_effect = add_active_effect(target.active_effect, 'WD', value);
@@ -935,6 +934,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -952,6 +952,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -969,6 +970,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -986,6 +988,7 @@ namespace ActionLib {
             // [new_target_state + 1] = t.protection_points;
             // [new_target_state + 2] = new_active_effect;
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1001,6 +1004,7 @@ namespace ActionLib {
             tempvar is_bleeding = 1;
 
             tempvar range_check_ptr = range_check_ptr;
+            assert ah2 = dummy_ah;
             jmp dh if is_bleeding != 0;
             jmp no_attribute;
         } else {
@@ -1019,6 +1023,7 @@ namespace ActionLib {
             [new_target_state + 1] = t.protection_points;
             [new_target_state + 2] = t.active_effects;
             assert ah1 = ActionHistory(attribute, target_bleed_stack, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1066,7 +1071,7 @@ namespace ActionLib {
                 mul_then_div(damage_amount, s.damage_coef, 100), 100, t.armor_coef
             );
             let tmp = clamp(0, t.protection_points - damage, t.protection_points);
-            tempvar new_hp;
+            local new_hp;
             if (tmp == 0) {
                 let anti_compiler_bug = clamp(
                     0, t.health_points - (damage - t.protection_points), t.max_health_points
@@ -1084,6 +1089,7 @@ namespace ActionLib {
             [new_target_state + 2] = t.active_effects;
 
             assert ah1 = ActionHistory(AttributeEnum.DIRECT_HIT, damage, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1128,6 +1134,7 @@ namespace ActionLib {
             [new_target_state + 2] = t.active_effects;
 
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1143,6 +1150,7 @@ namespace ActionLib {
             tempvar is_poisoned = 1;
 
             tempvar range_check_ptr = range_check_ptr;
+            assert ah2 = dummy_ah;
             jmp wd if is_poisoned != 0;
             jmp no_attribute;
         } else {
@@ -1161,6 +1169,7 @@ namespace ActionLib {
             // [new_target_state + 2] = new_active_effect;
 
             assert ah1 = ActionHistory(attribute, value, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1175,7 +1184,7 @@ namespace ActionLib {
             local damage_amount = value * 3;  // todo: replace 3 by nb of poison on target
             local damage = mul_then_div(mul_then_div(damage_amount, s.damage_coef, 100), 100, t.armor_coef);
             let new_pp = clamp(0, t.protection_points - damage, t.protection_points);
-            tempvar new_hp;
+            local new_hp;
             if (new_pp == 0) {
                 let anti_compiler_bug = clamp(
                     0, t.health_points - (damage - t.protection_points), t.max_health_points
@@ -1192,6 +1201,7 @@ namespace ActionLib {
             [new_target_state + 2] = t.active_effects;
 
             assert ah1 = ActionHistory(attribute, damage, source_id, target_id);
+            assert ah2 = dummy_ah;
             tempvar range_check_ptr = range_check_ptr;
             jmp end;
         } else {
@@ -1239,16 +1249,23 @@ namespace ActionLib {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(targets_id_len: felt, targets_id: felt*, value: felt, seed: Xoshiro128_ss.XoshiroState) -> (
-        _targets_id_len: felt, seed: Xoshiro128_ss.XoshiroState
-    ) {
+    }(
+        targets_id_len: felt,
+        targets_id: felt*,
+        nb_of_targets: felt,
+        value: felt,
+        seed: Xoshiro128_ss.XoshiroState,
+    ) -> (_targets_id_len: felt, seed: Xoshiro128_ss.XoshiroState) {
         if (value == 0) {
             return (_targets_id_len=targets_id_len, seed=seed);
         }
 
         let (state: Xoshiro128_ss.XoshiroState, rnd: felt) = Xoshiro128_ss.next(seed);
-        [targets_id] = rnd;
-        return _fill_target_with_random(targets_id_len + 1, targets_id + 1, value - 1, state);
+        let (_, target_id) = unsigned_div_rem(rnd, nb_of_targets);
+        [targets_id] = target_id;
+        return _fill_target_with_random(
+            targets_id_len + 1, targets_id + 1, nb_of_targets, value - 1, state
+        );
     }
 
     func _fill_target_with_all_enemies{
@@ -1267,17 +1284,5 @@ namespace ActionLib {
         return _fill_target_with_all_enemies(
             new_targets_id_len, targets_id + value, enemy_nb - 1, value
         );
-    }
-
-    func _fill_target_with_player{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        targets_id_len: felt, targets_id: felt*, value: felt
-    ) -> (_targets_id_len: felt) {
-        if (value == 0) {
-            return (_targets_id_len=targets_id_len);
-        }
-
-        tempvar player_index = -1;
-        [targets_id] = player_index;
-        return _fill_target_with_player(targets_id_len + 1, targets_id + 1, value - 1);
     }
 }
