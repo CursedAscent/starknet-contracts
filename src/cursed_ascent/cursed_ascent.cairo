@@ -51,7 +51,10 @@ func start_new_game{
     // Check if session manager already stores a game for caller
     let (caller_address) = get_caller_address();
     let current_game_state = AGameMode.get_saved_game_state(caller_address);
-    assert current_game_state = 0;
+    with_attr error_message(
+            "cursed_ascent.start_new_game: There is already a saved game. You should call cursed_ascent.stop_game() before creating a new game...") {
+        // assert current_game_state = 0;
+    }
 
     // build a new Player
     let player: Player = PlayerBuilderLib.build_player(adventurer_ref);
