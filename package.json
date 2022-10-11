@@ -3,6 +3,6 @@
     "@types/node": "^18.8.3"
   },
   "dependencies": {
-    "starknet": "^4.8.0"
+    "starknet": "^4.4.2"
   }
 }

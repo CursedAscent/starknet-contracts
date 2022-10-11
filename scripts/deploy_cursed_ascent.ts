@@ -7,7 +7,7 @@ import { deployCockyImp } from "./deploy_cocky_imp";
 import { deploySceneCollection } from "./deploy_scene_collection";
 import { deploySceneCatalog } from "./deploy_scene_catalog";
 
-import { Account, ec, ProviderOptions, Signer, json, Contract } from "starknet";
+import { Account, ec, ProviderOptions, Signer, json, Contract, Abi } from "starknet";
 import fs from "fs";
 
 const CONTRACT_NAME="CursedAscent";
@@ -18,7 +18,7 @@ export async function deployCursedAscent (calldataCallback?: Function) {
     console.log("["+CONTRACT_NAME+"] - [~] - Deploying CardCatalog");
     const cardCatalogInst = await deployCardCatalog();
     console.log("["+CONTRACT_NAME+"] - [~] - Adding card collection to catalog");
-    
+
     await cardCatalogInst.add_collection(74171710399844, cardCollectionInst.address);
 
     console.log("["+CONTRACT_NAME+"] - [~] - Deploying EnemyCollection");

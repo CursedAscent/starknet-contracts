@@ -21,7 +21,7 @@ export async function deployCardCatalog (calldataCallback?: Function) {
     const providerOptions : ProviderOptions = process.env.STARKNET_NET_URL ? {sequencer: {baseUrl: process.env.STARKNET_NET_URL}} : {sequencer: {network: "goerli-alpha"}};
     const keyPair = ec.getKeyPair(process.env.STARKNET_PK);
     const signer = new Signer(keyPair);
-    const account = new Account(providerOptions, process.env.STARKNET_ACC_ADDRESS ?? "", signer);
+    const account = new Account(providerOptions, process.env.STARKNET_ACC_ADDRESS?.toLowerCase() ?? "", signer);
 
     console.log("["+CONTRACT_NAME+"] - [~] - Sending deployment request");
 
