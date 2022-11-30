@@ -1,41 +1,19 @@
-["protostar.config"]
-protostar_version = "0.5.0"
+[project]
+protostar-version = "0.8.1"
 
-["protostar.project"]
-libs_path = "lib"
+# Shared Configuration (affects all commands)
+lib-path = "lib"
+cairo-path = ["./lib/cairopen_contracts/src", "./lib/realms_contracts/"]
 
-["protostar.contracts"]
-CardCollection = [
-    "src/card/CardCollection/CardCollection.cairo",
-]
-CardCatalog = [
-    "src/card/CardCatalog/CardCatalog.cairo",
-]
-EnemyCollection = [
-    "src/enemy/EnemyCollection/EnemyCollection.cairo",
-]
-EnemyCatalog = [
-    "src/enemy/EnemyCatalog/EnemyCatalog.cairo",
-]
-SceneCollection = [
-    "src/scene/SceneCollection/SceneCollection.cairo",
-]
-SceneCatalog = [
-   "src/scene/SceneCatalog/SceneCatalog.cairo",
-]
-cursed_ascent = [
-    "src/cursed_ascent/cursed_ascent.cairo",
-]
-# Scene Logic contracts
-CockyImp = [
-    "src/cursed_ascent/scene/cocky_imp.cairo",
-]
+[contracts]
+CardCollection = ["src/card/CardCollection/CardCollection.cairo"]
+CardCatalog = ["src/card/CardCatalog/CardCatalog.cairo"]
+EnemyCollection = ["src/enemy/EnemyCollection/EnemyCollection.cairo"]
+EnemyCatalog = ["src/enemy/EnemyCatalog/EnemyCatalog.cairo"]
+SceneCollection = ["src/scene/SceneCollection/SceneCollection.cairo"]
+SceneCatalog = ["src/scene/SceneCatalog/SceneCatalog.cairo"]
+cursed_ascent = ["src/cursed_ascent/cursed_ascent.cairo"]
+CockyImp = ["src/cursed_ascent/scene/cocky_imp.cairo"]
 
-["protostar.build"]
-cairo-path = ["./lib/cairopen_contracts/src", "./lib/realms-contracts/contracts/loot"]
-
-["protostar.test"]
-cairo-path = ["./lib/cairopen_contracts/src", "./lib/realms-contracts/contracts/loot"]
-
-["profile.devnet.protostar.deploy"]
+[profile.devnet.deploy]
 gateway_url = "http://127.0.0.1:5050/"
